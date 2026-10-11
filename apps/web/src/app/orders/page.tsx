@@ -2,12 +2,12 @@
 
 import Link from "next/link";
 import { Package } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { EmptyState } from "@/components/ui/empty-state";
-import { ErrorState } from "@/components/ui/error-state";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Badge } from "@taskmanager/ui/components/badge";
+import { Button } from "@taskmanager/ui/components/button";
+import { Card, CardContent } from "@taskmanager/ui/components/card";
+import { EmptyState } from "@taskmanager/ui/components/empty-state";
+import { ErrorState } from "@/components/error-state";
+import { Skeleton } from "@taskmanager/ui/components/skeleton";
 import { useOrders } from "@/features/orders/use-orders";
 import { useRequireAuth } from "@/features/auth/use-require-auth";
 import { ORDER_STATUS } from "@/features/orders/status";

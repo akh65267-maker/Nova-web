@@ -17,6 +17,7 @@
     "lint-staged": "^17.5.1"
   },
   "lint-staged": {
-    "apps/web/**/*.{ts,tsx}": "npm exec --workspace=@taskmanager/web -- eslint --fix"
+    "apps/web/**/*.{ts,tsx}": "npm exec --workspace=@taskmanager/web -- eslint --fix",
+    "packages/ui/**/*.{ts,tsx}": "npm exec --workspace=@taskmanager/ui -- eslint --fix"
   }
 }

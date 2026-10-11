@@ -2,9 +2,9 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@taskmanager/ui/components/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@taskmanager/ui/components/card";
+import { Skeleton } from "@taskmanager/ui/components/skeleton";
 import { useCurrentUser, useLogout } from "@/features/auth/use-auth";
 import { useRequireAuth } from "@/features/auth/use-require-auth";
 import { useAuthStore } from "@/store/auth-store";

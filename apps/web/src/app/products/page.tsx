@@ -2,18 +2,18 @@
 
 import { Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Button } from "@/components/ui/button";
+import { Button } from "@taskmanager/ui/components/button";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from "@taskmanager/ui/components/select";
 import { SearchX } from "lucide-react";
-import { ErrorState } from "@/components/ui/error-state";
-import { EmptyState } from "@/components/ui/empty-state";
-import { Skeleton } from "@/components/ui/skeleton";
+import { ErrorState } from "@/components/error-state";
+import { EmptyState } from "@taskmanager/ui/components/empty-state";
+import { Skeleton } from "@taskmanager/ui/components/skeleton";
 import { useProducts } from "@/features/catalog/use-products";
 import { ProductCard } from "@/features/catalog/product-card";
 import { ProductFilters, MAX_PRICE, type FilterState } from "@/features/catalog/product-filters";

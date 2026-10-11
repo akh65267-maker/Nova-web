@@ -1,6 +1,6 @@
 import { TriangleAlert } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { EmptyState } from "@/components/ui/empty-state";
+import { Button } from "@taskmanager/ui/components/button";
+import { EmptyState } from "@taskmanager/ui/components/empty-state";
 import { getApiErrorMessage } from "@/lib/api-error";
 
 // Shown in place of a page's content when its data could not be loaded. Without it a failed

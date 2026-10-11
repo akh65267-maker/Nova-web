@@ -3,8 +3,8 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Check } from "lucide-react";
-import { Card, CardContent, CardFooter } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardFooter } from "@taskmanager/ui/components/card";
+import { Button } from "@taskmanager/ui/components/button";
 import { useCartStore } from "@/store/cart-store";
 import { toast } from "sonner";
 import type { ProductDto } from "./api";

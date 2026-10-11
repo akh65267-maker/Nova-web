@@ -3,9 +3,9 @@
 import { useState } from "react";
 import { toast } from "sonner";
 import { AxiosError } from "axios";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Button } from "@taskmanager/ui/components/button";
+import { Input } from "@taskmanager/ui/components/input";
+import { Label } from "@taskmanager/ui/components/label";
 import {
   Dialog,
   DialogContent,
@@ -13,21 +13,21 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
+} from "@taskmanager/ui/components/dialog";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Skeleton } from "@/components/ui/skeleton";
+} from "@taskmanager/ui/components/select";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@taskmanager/ui/components/table";
+import { Skeleton } from "@taskmanager/ui/components/skeleton";
 import { useProducts, useCreateProduct } from "@/features/catalog/use-products";
 import { useCreateInventory, useInventoryList, useRestockInventory } from "@/features/inventory/use-inventory";
 import { CATEGORIES } from "@/features/catalog/categories";
-import { ErrorMessage } from "@/components/ui/error-message";
-import { ErrorState } from "@/components/ui/error-state";
+import { ErrorMessage } from "@taskmanager/ui/components/error-message";
+import { ErrorState } from "@/components/error-state";
 import { getApiErrorMessage } from "@/lib/api-error";
 
 function NewProductDialog() {

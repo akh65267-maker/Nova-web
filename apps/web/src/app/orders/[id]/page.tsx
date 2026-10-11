@@ -2,12 +2,12 @@
 
 import { use } from "react";
 import Link from "next/link";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
-import { ErrorState } from "@/components/ui/error-state";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Badge } from "@taskmanager/ui/components/badge";
+import { Button } from "@taskmanager/ui/components/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@taskmanager/ui/components/card";
+import { Separator } from "@taskmanager/ui/components/separator";
+import { ErrorState } from "@/components/error-state";
+import { Skeleton } from "@taskmanager/ui/components/skeleton";
 import { ORDER_STATUS } from "@/features/orders/status";
 import { useOrder } from "@/features/orders/use-orders";
 import { cn } from "@/lib/utils";

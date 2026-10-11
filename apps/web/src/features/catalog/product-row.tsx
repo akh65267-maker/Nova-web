@@ -3,8 +3,8 @@
 import { useRef } from "react";
 import Link from "next/link";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@taskmanager/ui/components/button";
+import { Skeleton } from "@taskmanager/ui/components/skeleton";
 import { useProducts } from "./use-products";
 import { ProductCard } from "./product-card";
 

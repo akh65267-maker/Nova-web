@@ -1,4 +1,4 @@
-import { cn } from "@/lib/utils";
+import { cn } from "../lib/utils";
 
 // Inline error for a form or action the user just submitted. Sits next to the control.
 // (A row-level or transient action failure is a toast; a page that fails to load is an ErrorState.)

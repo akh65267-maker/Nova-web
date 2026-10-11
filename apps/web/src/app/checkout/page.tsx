@@ -3,11 +3,11 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Loader2, ShoppingCart } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ErrorMessage } from "@/components/ui/error-message";
-import { EmptyState } from "@/components/ui/empty-state";
-import { Separator } from "@/components/ui/separator";
+import { Button } from "@taskmanager/ui/components/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@taskmanager/ui/components/card";
+import { ErrorMessage } from "@taskmanager/ui/components/error-message";
+import { EmptyState } from "@taskmanager/ui/components/empty-state";
+import { Separator } from "@taskmanager/ui/components/separator";
 import { useCartStore, useCartSubtotal } from "@/store/cart-store";
 import { useCreateOrder } from "@/features/orders/use-orders";
 import { useRequireAuth } from "@/features/auth/use-require-auth";

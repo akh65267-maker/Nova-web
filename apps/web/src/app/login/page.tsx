@@ -4,12 +4,12 @@ import { Suspense } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@taskmanager/ui/components/button";
+import { Input } from "@taskmanager/ui/components/input";
+import { Label } from "@taskmanager/ui/components/label";
+import { Card, CardContent, CardHeader, CardTitle } from "@taskmanager/ui/components/card";
 import { useLogin } from "@/features/auth/use-auth";
-import { ErrorMessage } from "@/components/ui/error-message";
+import { ErrorMessage } from "@taskmanager/ui/components/error-message";
 import { getApiErrorMessage } from "@/lib/api-error";
 
 export default function LoginPage() {

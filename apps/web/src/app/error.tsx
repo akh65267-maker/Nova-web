@@ -3,8 +3,8 @@
 import { useEffect } from "react";
 import Link from "next/link";
 import { TriangleAlert } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { EmptyState } from "@/components/ui/empty-state";
+import { Button } from "@taskmanager/ui/components/button";
+import { EmptyState } from "@taskmanager/ui/components/empty-state";
 
 // Catches an unexpected render error in any page; the header and footer stay in place.
 // `retry` is this Next.js version's recovery call (re-fetches, then re-renders the segment).

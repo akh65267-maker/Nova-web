@@ -5,8 +5,8 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { ShoppingCart, Search, User, Sun, Moon } from "lucide-react";
 import { useTheme } from "next-themes";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Button } from "@taskmanager/ui/components/button";
+import { Input } from "@taskmanager/ui/components/input";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -15,7 +15,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from "@taskmanager/ui/components/dropdown-menu";
 import { useCartCount, useCartStore } from "@/store/cart-store";
 import { useAuthStore } from "@/store/auth-store";
 import { useCurrentUser, useLogout } from "@/features/auth/use-auth";

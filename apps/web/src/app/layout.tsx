@@ -7,7 +7,7 @@ import { StoreHydrator } from "@/providers/store-hydrator";
 import { SiteHeader } from "@/components/layout/site-header";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { CartDrawer } from "@/components/layout/cart-drawer";
-import { Toaster } from "@/components/ui/sonner";
+import { Toaster } from "@taskmanager/ui/components/sonner";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",

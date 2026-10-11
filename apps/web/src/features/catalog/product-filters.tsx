@@ -1,8 +1,8 @@
 "use client";
 
-import { Checkbox } from "@/components/ui/checkbox";
-import { Slider } from "@/components/ui/slider";
-import { Button } from "@/components/ui/button";
+import { Checkbox } from "@taskmanager/ui/components/checkbox";
+import { Slider } from "@taskmanager/ui/components/slider";
+import { Button } from "@taskmanager/ui/components/button";
 import { CATEGORIES } from "@/features/catalog/categories";
 
 export const MAX_PRICE = 200;

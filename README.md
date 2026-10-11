@@ -6,7 +6,7 @@ The storefront (and soon the admin) for the TaskManager backend, a Next.js 16 ap
 
 ```
 apps/web/        the shop (Next.js App Router)
-packages/        shared packages (added as they are extracted)
+packages/ui/     shared UI primitives and the design tokens (@taskmanager/ui)
 docs/            documentation
 package.json     the workspace root: scripts, git hooks, lint-staged
 ```

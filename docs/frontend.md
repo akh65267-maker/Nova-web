@@ -209,6 +209,16 @@ own `unitPrice`.
 - **Restock** calls `POST /inventory/{id}/restock`; on a 404 it falls back to `POST /inventory`
   (creating the record), which is how products created without stock are handled.
 
+## Shared UI package (`packages/ui`, `@taskmanager/ui`)
+
+The shadcn/Base UI primitives (`button`, `card`, `dialog`, `select`, `sheet`, `table`, `empty-state`, `error-message`, and the rest of what used to be `components/ui`) and the design tokens live in `packages/ui`, so the shop and the future admin app share one set.
+
+- **Importing:** `import { Button } from "@taskmanager/ui/components/button"`, `import { cn } from "@taskmanager/ui/lib/utils"`. The package's `exports` map names exactly these paths (`./components/*`, `./lib/utils`, `./theme.css`); the source is compiled by the app's bundler, so there is no build step for the package.
+- **Styles:** the tokens, the `@theme` mapping and the base layer are `packages/ui/src/theme.css`. An app's stylesheet imports it after `tailwindcss`, `tw-animate-css` and `shadcn/tailwind.css`, **and** must add an `@source` line pointing at the package (see `apps/web/src/app/globals.css`). Tailwind v4 scans only the app's own files by itself: without that line the app still builds, but every class used only inside the package silently has no styles. This was checked on purpose: with the line removed, a visual comparison of 20 screenshots fails; with it, all 20 match the pre-move baseline.
+- **What stayed in the app, and why:** `error-state` (it formats errors with the API helper, which belongs with the API client) and `rive-player` (a shop-only library). `src/lib/utils.ts` is a one-line re-export of `cn`, so existing imports keep working.
+- **Adding a component:** the shadcn CLI is **not** set up to write into the package. Its monorepo mode did not resolve the package alias here (it produced a path outside the repository, so that configuration was removed). Run `npx shadcn add <name>` in `apps/web` (it lands in `apps/web/src/components/ui`), then move the file into `packages/ui/src/components`, change its `@/...` imports to relative ones, and import it through `@taskmanager/ui`.
+- **Linting:** the package has its own `eslint.config.mjs` (the app's rules minus the one that looks for a `pages` directory). When a third config appears, extract them into a shared `packages/config`.
+
 ## UI Architecture
 
 - shadcn/ui components in `src/components/ui`, built on `@base-ui/react`. Base UI's composition

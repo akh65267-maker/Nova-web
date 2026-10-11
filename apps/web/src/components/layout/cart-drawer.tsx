@@ -8,9 +8,9 @@ import {
   SheetHeader,
   SheetTitle,
   SheetFooter,
-} from "@/components/ui/sheet";
-import { Button } from "@/components/ui/button";
-import { EmptyState } from "@/components/ui/empty-state";
+} from "@taskmanager/ui/components/sheet";
+import { Button } from "@taskmanager/ui/components/button";
+import { EmptyState } from "@taskmanager/ui/components/empty-state";
 import { MAX_PER_ORDER, useCartStore } from "@/store/cart-store";
 
 export function CartDrawer() {

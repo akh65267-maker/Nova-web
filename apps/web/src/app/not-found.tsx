@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { FileQuestion } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { EmptyState } from "@/components/ui/empty-state";
+import { Button } from "@taskmanager/ui/components/button";
+import { EmptyState } from "@taskmanager/ui/components/empty-state";
 
 export default function NotFound() {
   return (
