@@ -1,0 +1,7 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+@import "@taskmanager/ui/theme.css";
+
+/* Tailwind scans the app's own files by itself; the package is outside the app, so say where. */
+@source "../../../../packages/ui/src";

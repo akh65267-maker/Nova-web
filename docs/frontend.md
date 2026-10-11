@@ -4,7 +4,7 @@ Repo: `taskmanager-web` (separate from the `TaskManager` backend repo).
 Verified against source on 2026-09-19 (through commit `7df89c2`). Source code is the ultimate truth — if this
 document disagrees with the code, the code wins.
 
-> **Repository layout.** The app now lives in `apps/web/` inside an npm-workspaces monorepo (the split is described in the backend repo's `docs/admin-dashboard-plan.md`, section 4). Every `src/...`, `e2e/...` and `public/...` path in this document is relative to `apps/web/`. Run `npm run dev`, `lint`, `build` and `test:e2e` from the repository root. The commit hook (Husky, lint-staged) is configured in the root `package.json` and runs ESLint inside the workspace of each staged file; add a line there for each new app or package.
+> **Repository layout.** The app now lives in `apps/web/` inside an npm-workspaces monorepo (the split is described in the backend repo's `docs/admin-dashboard-plan.md`, section 4). Every `src/...`, `e2e/...` and `public/...` path in this document is relative to `apps/web/`. Run `npm run dev` (the shop, 3100), `npm run dev:admin` (the admin, 3200), `lint`, `build` and `test:e2e` from the repository root. The commit hook (Husky, lint-staged) is configured in the root `package.json` and runs ESLint inside the workspace of each staged file; add a line there for each new app or package.
 
 ## Overview
 
@@ -62,8 +62,6 @@ the theme class before hydration.
 | `/account` | auth | Profile, sign out, admin link if Admin |
 | `/orders`, `/orders/[id]` | auth | Both guarded. The detail page redirects to bare `/login` (no `?redirect=`), so after signing in the user lands on `/account`, not back on the order |
 | `/checkout` | auth | |
-| `/admin` | auth + Admin | Redirects to `/admin/products` |
-| `/admin/products` | auth + Admin | Product list, create, restock |
 
 Pages that read `useSearchParams` (`/products`, `/login`) wrap their content in `<Suspense>`
 — required for the App Router prerender.
@@ -107,7 +105,7 @@ LoginPage → useLogin() → POST /users/login → { token, expiresAtUtc }
   claim equals `"Admin"` and the session is unexpired. The token is decoded with `atob` — the
   signature is never verified in the browser.
 - `useRequireAuth(redirectTo, { requireAdmin, forbiddenRedirectTo })` is the single guard hook.
-  It returns `{ isReady }`; pages render `null` until ready. Non-admins on `/admin/products`
+  It returns `{ isReady }`; pages render `null` until ready. (The admin app's console sends non-admins
   are redirected to `/`.
 - **This is UI convenience, not a security boundary.** Nothing stops a client from rendering
   admin UI or issuing admin requests; enforcement is the backend's (`Admin` policy on the
@@ -195,19 +193,17 @@ own `unitPrice`.
   where the polling `useOrder` shows `Pending → Confirmed | Cancelled` and renders
   `cancellationReason` on cancellation.
 
-## Admin Panel
+## Admin app (`apps/admin`, `@taskmanager/admin`)
 
-- `app/admin/layout.tsx` is the admin shell: a sidebar (a tab row on mobile) driven by its `NAV` array, a "Back to shop" link, and the **single guard** for every admin page: `useRequireAuth(`/login?redirect=<current path>`, { requireAdmin: true })`. Admin pages no longer guard themselves. To add a section, add a page under `app/admin/` and one `NAV` entry.
-- The only section today is Products. The shop header and footer still wrap it; they would not in a separate admin app.
-- Linked from `/account` only when `isAdmin()`.
-- **Boundaries are lint-enforced** (`eslint.config.mjs`, `no-restricted-imports`): nothing outside `app/admin` may import from it, and admin may not import shop-specific UI (`components/layout`, `product-card`/`-row`/`-filters`) or the cart store. This keeps a later split into its own app mechanical; the plan for that (`apps/web`, `apps/admin`, shared `ui`/`api`/`auth` packages) is deliberately deferred until admin outgrows one section or needs its own session policy.
-- Lists `useProducts({ pageSize: 100 })` joined against `useInventoryList()` via a
-  `Map<productId, quantityAvailable>`.
-- **New product** is a two-step client-orchestrated flow: `POST /products`, then on success
-  `POST /inventory` with the initial stock. If the second call fails, the product exists with
-  no inventory record — there is no rollback.
-- **Restock** calls `POST /inventory/{id}/restock`; on a 404 it falls back to `POST /inventory`
-  (creating the record), which is how products created without stock are handled.
+The admin is its own Next.js app, served on **port 3200** (`npm run dev:admin`), beside the shop on 3100. It reuses `@taskmanager/ui`, `@taskmanager/api` and `@taskmanager/auth`; nothing from the shop's own code.
+
+- **Its own session.** `localStorage` is per origin, so signing in to the shop does not sign in to the admin, and the reverse. That is deliberate. The admin has its own sign-in page, which signs the person straight back out and says so if the account is not an `Admin` (the check reads the role from the token, as everywhere; the backend enforces it).
+- **Routes:** `/login`; and, behind one guard in `app/(console)/layout.tsx`, `/` (redirects to `/products`) and `/products`. The guard is `useRequireAuth` with `requireAdmin`; a signed-in non-admin goes to `/login?forbidden=1`, where that session is dropped. The login page only follows a `redirect` that is a path inside the app.
+- **The shell:** a slim header (brand, "Back to shop" to `NEXT_PUBLIC_SHOP_URL`, "Sign out") and a sidebar, a tab row on mobile, driven by the `NAV` array in the layout. To add a section, add a page under `app/(console)/` and one `NAV` entry.
+- **Products** (unchanged from when it lived in the shop): lists `useProducts({ pageSize: 100 })` joined against `useInventoryList()` via a `Map<productId, quantityAvailable>`. **New product** is a two-step client-orchestrated flow, `POST /products` then `POST /inventory` with the initial stock; if the second call fails the product exists with no inventory record, and the dialog says so (no rollback). **Restock** calls `POST /inventory/{id}/restock`; on a 404 it falls back to `POST /inventory`.
+- **Gateway CORS.** The gateway only answers browsers on the origins in `Cors:AllowedOrigins`: 3100 and 3200 in `deploy/docker-compose.yml` of the backend repo. A new origin must be added there, or the page loads and every API call is blocked.
+- **The shop** links to the admin from `/account` (only for admins) using `NEXT_PUBLIC_ADMIN_URL` (default `http://localhost:3200`).
+- **Tests:** `apps/admin/e2e`. An anonymous visit is turned away; a throwaway customer is refused and left signed out; and, when `ADMIN_EMAIL` and `ADMIN_PASSWORD` are set in the environment, an administrator signs in, sees the data and signs out (skipped without them, so no credential is stored in this repository).
 
 ## Shared UI package (`packages/ui`, `@taskmanager/ui`)
 

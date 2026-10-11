@@ -6,7 +6,8 @@ import { Badge } from "@taskmanager/ui/components/badge";
 import { Button } from "@taskmanager/ui/components/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@taskmanager/ui/components/card";
 import { Separator } from "@taskmanager/ui/components/separator";
-import { ErrorState } from "@/components/error-state";
+import { ErrorState } from "@taskmanager/ui/components/error-state";
+import { getApiErrorMessage } from "@taskmanager/api/errors";
 import { Skeleton } from "@taskmanager/ui/components/skeleton";
 import { ORDER_STATUS } from "@/features/orders/status";
 import { useOrder } from "@taskmanager/api/use-orders";
@@ -19,7 +20,7 @@ export default function OrderDetailPage(props: PageProps<"/orders/[id]">) {
   const { data: order, isLoading, isError, error, refetch } = useOrder(id);
 
   if (isReady && isError && !order) {
-    return <ErrorState className="py-24" error={error} onRetry={() => refetch()} title="Couldn't load this order" />;
+    return <ErrorState className="py-24" description={getApiErrorMessage(error, "Check your connection and try again.")} onRetry={() => refetch()} title="Couldn't load this order" />;
   }
 
   if (!isReady || isLoading || !order) {

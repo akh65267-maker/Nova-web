@@ -56,7 +56,7 @@ export default function AccountPage() {
               <Button
                 variant="outline"
                 nativeButton={false}
-                render={<Link href="/admin/products">Manage products</Link>}
+                render={<a href={process.env.NEXT_PUBLIC_ADMIN_URL ?? "http://localhost:3200"}>Open the admin</a>}
               />
             )}
             <Button

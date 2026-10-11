@@ -9,8 +9,9 @@
     "dev": "npm run dev -w @taskmanager/web",
     "build": "npm run build --workspaces --if-present",
     "lint": "npm run lint --workspaces --if-present",
-    "test:e2e": "npm run test:e2e -w @taskmanager/web",
-    "prepare": "husky"
+    "test:e2e": "npm run test:e2e -w @taskmanager/web && npm run test:e2e -w @taskmanager/admin",
+    "prepare": "husky",
+    "dev:admin": "npm run dev -w @taskmanager/admin"
   },
   "devDependencies": {
     "husky": "^9.1.7",
@@ -20,6 +21,7 @@
     "apps/web/**/*.{ts,tsx}": "npm exec --workspace=@taskmanager/web -- eslint --fix",
     "packages/ui/**/*.{ts,tsx}": "npm exec --workspace=@taskmanager/ui -- eslint --fix",
     "packages/api/**/*.{ts,tsx}": "npm exec --workspace=@taskmanager/api -- eslint --fix",
-    "packages/auth/**/*.{ts,tsx}": "npm exec --workspace=@taskmanager/auth -- eslint --fix"
+    "packages/auth/**/*.{ts,tsx}": "npm exec --workspace=@taskmanager/auth -- eslint --fix",
+    "apps/admin/**/*.{ts,tsx}": "npm exec --workspace=@taskmanager/admin -- eslint --fix"
   }
 }

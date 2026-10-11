@@ -1,17 +1,17 @@
 import { TriangleAlert } from "lucide-react";
-import { Button } from "@taskmanager/ui/components/button";
-import { EmptyState } from "@taskmanager/ui/components/empty-state";
-import { getApiErrorMessage } from "@taskmanager/api/errors";
+import { Button } from "./button";
+import { EmptyState } from "./empty-state";
 
 // Shown in place of a page's content when its data could not be loaded. Without it a failed
-// request looks like an empty list or a skeleton that never resolves.
+// request looks like an empty list or a skeleton that never resolves. The caller turns its error
+// into text (the apps use getApiErrorMessage), so this component knows nothing about the API.
 export function ErrorState({
-  error,
+  description = "Check your connection and try again.",
   onRetry,
   title = "We couldn't load this",
   className,
 }: {
-  error?: unknown;
+  description?: string;
   onRetry?: () => void;
   title?: string;
   className?: string;
@@ -21,7 +21,7 @@ export function ErrorState({
       className={className}
       icon={TriangleAlert}
       title={title}
-      description={getApiErrorMessage(error, "Check your connection and try again.")}
+      description={description}
       action={
         onRetry && (
           <Button variant="outline" onClick={onRetry}>

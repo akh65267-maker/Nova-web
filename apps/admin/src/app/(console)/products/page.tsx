@@ -27,7 +27,7 @@ import { useProducts, useCreateProduct } from "@taskmanager/api/use-products";
 import { useCreateInventory, useInventoryList, useRestockInventory } from "@taskmanager/api/use-inventory";
 import { CATEGORIES } from "@taskmanager/api/categories";
 import { ErrorMessage } from "@taskmanager/ui/components/error-message";
-import { ErrorState } from "@/components/error-state";
+import { ErrorState } from "@taskmanager/ui/components/error-state";
 import { getApiErrorMessage } from "@taskmanager/api/errors";
 
 function NewProductDialog() {
@@ -231,7 +231,7 @@ export default function AdminProductsPage() {
           <Skeleton className="h-10 w-full" />
         </div>
       ) : isProductsError ? (
-        <ErrorState error={productsError} onRetry={() => refetchProducts()} title="Couldn't load products" />
+        <ErrorState description={getApiErrorMessage(productsError, "Check your connection and try again.")} onRetry={() => refetchProducts()} title="Couldn't load products" />
       ) : (
         <Table>
           <TableHeader>

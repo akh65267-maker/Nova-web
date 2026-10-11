@@ -6,7 +6,8 @@ import { Badge } from "@taskmanager/ui/components/badge";
 import { Button } from "@taskmanager/ui/components/button";
 import { Card, CardContent } from "@taskmanager/ui/components/card";
 import { EmptyState } from "@taskmanager/ui/components/empty-state";
-import { ErrorState } from "@/components/error-state";
+import { ErrorState } from "@taskmanager/ui/components/error-state";
+import { getApiErrorMessage } from "@taskmanager/api/errors";
 import { Skeleton } from "@taskmanager/ui/components/skeleton";
 import { useOrders } from "@taskmanager/api/use-orders";
 import { useRequireAuth } from "@taskmanager/auth/use-require-auth";
@@ -30,7 +31,7 @@ export default function OrdersPage() {
           <Skeleton className="h-20 w-full" />
         </div>
       ) : isError ? (
-        <ErrorState error={error} onRetry={() => refetch()} title="Couldn't load your orders" />
+        <ErrorState description={getApiErrorMessage(error, "Check your connection and try again.")} onRetry={() => refetch()} title="Couldn't load your orders" />
       ) : orders && orders.length > 0 ? (
         <div className="flex flex-col gap-3">
           {orders.map((order) => (

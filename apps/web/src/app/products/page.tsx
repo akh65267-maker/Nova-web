@@ -11,7 +11,8 @@ import {
   SelectValue,
 } from "@taskmanager/ui/components/select";
 import { SearchX } from "lucide-react";
-import { ErrorState } from "@/components/error-state";
+import { ErrorState } from "@taskmanager/ui/components/error-state";
+import { getApiErrorMessage } from "@taskmanager/api/errors";
 import { EmptyState } from "@taskmanager/ui/components/empty-state";
 import { Skeleton } from "@taskmanager/ui/components/skeleton";
 import { useProducts } from "@taskmanager/api/use-products";
@@ -124,7 +125,7 @@ function ProductsPageContent() {
               ))}
             </div>
           ) : isError && !data ? (
-            <ErrorState error={error} onRetry={() => refetch()} title="Couldn't load products" />
+            <ErrorState description={getApiErrorMessage(error, "Check your connection and try again.")} onRetry={() => refetch()} title="Couldn't load products" />
           ) : data && data.items.length > 0 ? (
             <div
               className="grid grid-cols-2 gap-4 transition-opacity duration-200 sm:grid-cols-3 lg:grid-cols-4"
