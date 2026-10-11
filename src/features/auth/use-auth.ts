@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuthStore } from "@/store/auth-store";
+import { useCartStore } from "@/store/cart-store";
 import { decodeJwt } from "@/lib/jwt";
 import { getUser, login, register, type LoginRequest, type RegisterRequest } from "./api";
 
@@ -41,10 +42,16 @@ export function useCurrentUser() {
 
 export function useLogout() {
   const logout = useAuthStore((state) => state.logout);
+  const clearCart = useCartStore((state) => state.clear);
   const queryClient = useQueryClient();
 
+  // Signing out is a deliberate act on a browser someone else may use next, so the cart goes
+  // with the session: it is kept in the browser separately and would otherwise outlive it.
+  // (Deliberately not done when a token merely expires - api-client.ts - which would drop a
+  // cart the person never meant to throw away.)
   return () => {
     logout();
+    clearCart();
     queryClient.clear();
   };
 }

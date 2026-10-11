@@ -75,3 +75,41 @@ test("a new customer can check out and the order is confirmed", async ({ page, r
   // really reached InventoryService by checking the stock moved.
   expect(await quantityAvailable(request, product.id)).toBe(stockBefore - 1);
 });
+
+test("signing out empties the cart", async ({ page, request }) => {
+  // The cart lives in the browser, separately from the session. Signing out used to clear only
+  // the session, so the next person on the same browser opened the previous person's cart.
+  const product = await findPurchasableProduct(request);
+
+  const runId = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+  await page.goto("/register");
+  await page.getByLabel("Full name").fill("E2E Customer");
+  await page.getByLabel("Email").fill(`e2e+${runId}@example.com`);
+  await page.getByLabel("Password").fill(`E2e-${runId}`);
+  await page.getByRole("button", { name: "Create account" }).click();
+  await expect(page).toHaveURL(/\/account$/);
+
+  await page.goto(`/products/${product.id}`);
+  await expect(page.getByRole("heading", { name: product.name })).toBeVisible();
+  await page.getByRole("button", { name: "Add to cart" }).click();
+
+  // The cart really holds it before signing out.
+  await page.getByRole("button", { name: "Cart" }).click();
+  await expect(page.getByRole("dialog").getByText(product.name)).toBeVisible();
+  await page.keyboard.press("Escape");
+
+  await page.getByRole("button", { name: "Account" }).click();
+  await page.getByRole("menuitem", { name: "Sign out" }).click();
+  await page.waitForFunction(() => {
+    const stored = localStorage.getItem("tm-auth");
+    return !stored || !JSON.parse(stored).state?.token;
+  });
+
+  await page.getByRole("button", { name: "Cart" }).click();
+  await expect(page.getByText("Your cart is empty")).toBeVisible();
+
+  // And it stays empty: nothing is left in storage for a reload to bring back.
+  await page.reload();
+  await page.getByRole("button", { name: "Cart" }).click();
+  await expect(page.getByText("Your cart is empty")).toBeVisible();
+});

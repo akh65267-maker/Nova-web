@@ -161,7 +161,7 @@ the current behavior.
 | Store | Persisted (`localStorage`) | Responsibility |
 |---|---|---|
 | `auth-store` (`tm-auth`) | `token`, `expiresAtUtc` | Session token, expiry check, `isAdmin()` derived from the JWT, `hasHydrated` flag |
-| `cart-store` (`tm-cart`) | `items` | Cart lines (`productId`, `name`, `price`, `quantity`), drawer `isOpen` (not persisted) |
+| `cart-store` (`tm-cart`) | `items` | Cart lines (`productId`, `name`, `price`, `quantity`), drawer `isOpen` (not persisted). Cleared by an explicit sign-out (`useLogout`), not when a token merely expires (`api-client.ts`) |
 
 Both use `skipHydration: true` and are rehydrated by `StoreHydrator`.
 
