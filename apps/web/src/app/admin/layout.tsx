@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ArrowLeft, Package, ShieldCheck, type LucideIcon } from "lucide-react";
 import { Skeleton } from "@taskmanager/ui/components/skeleton";
-import { useRequireAuth } from "@/features/auth/use-require-auth";
+import { useRequireAuth } from "@taskmanager/auth/use-require-auth";
 import { cn } from "@/lib/utils";
 
 // Add a section here and it appears in the sidebar (and the mobile tab row).

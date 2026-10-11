@@ -1,8 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useAuthStore } from "@/store/auth-store";
-import { useCartStore } from "@/store/cart-store";
-import { decodeJwt } from "@/lib/jwt";
-import { getUser, login, register, type LoginRequest, type RegisterRequest } from "./api";
+import { useAuthStore } from "./auth-store";
+import { decodeJwt } from "./jwt";
+import { getUser, login, register, type LoginRequest, type RegisterRequest } from "@taskmanager/api/auth-api";
 
 export function useLogin() {
   const setSession = useAuthStore((state) => state.setSession);
@@ -40,18 +39,17 @@ export function useCurrentUser() {
   });
 }
 
-export function useLogout() {
+/**
+ * Ends the session and drops everything cached for it. `onLoggedOut` is for what only the
+ * calling app knows needs clearing too (the shop empties its cart there).
+ */
+export function useLogout(options: { onLoggedOut?: () => void } = {}) {
   const logout = useAuthStore((state) => state.logout);
-  const clearCart = useCartStore((state) => state.clear);
   const queryClient = useQueryClient();
 
-  // Signing out is a deliberate act on a browser someone else may use next, so the cart goes
-  // with the session: it is kept in the browser separately and would otherwise outlive it.
-  // (Deliberately not done when a token merely expires - api-client.ts - which would drop a
-  // cart the person never meant to throw away.)
   return () => {
     logout();
-    clearCart();
+    options.onLoggedOut?.();
     queryClient.clear();
   };
 }

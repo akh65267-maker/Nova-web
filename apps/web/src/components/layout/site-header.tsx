@@ -17,8 +17,9 @@ import {
   DropdownMenuTrigger,
 } from "@taskmanager/ui/components/dropdown-menu";
 import { useCartCount, useCartStore } from "@/store/cart-store";
-import { useAuthStore } from "@/store/auth-store";
-import { useCurrentUser, useLogout } from "@/features/auth/use-auth";
+import { useAuthStore } from "@taskmanager/auth/auth-store";
+import { useCurrentUser } from "@taskmanager/auth/use-auth";
+import { useLogout } from "@/features/auth/use-logout";
 
 function ThemeToggle() {
   const { resolvedTheme, setTheme } = useTheme();

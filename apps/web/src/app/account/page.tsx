@@ -5,9 +5,10 @@ import { useRouter } from "next/navigation";
 import { Button } from "@taskmanager/ui/components/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@taskmanager/ui/components/card";
 import { Skeleton } from "@taskmanager/ui/components/skeleton";
-import { useCurrentUser, useLogout } from "@/features/auth/use-auth";
-import { useRequireAuth } from "@/features/auth/use-require-auth";
-import { useAuthStore } from "@/store/auth-store";
+import { useCurrentUser } from "@taskmanager/auth/use-auth";
+import { useLogout } from "@/features/auth/use-logout";
+import { useRequireAuth } from "@taskmanager/auth/use-require-auth";
+import { useAuthStore } from "@taskmanager/auth/auth-store";
 
 export default function AccountPage() {
   const router = useRouter();

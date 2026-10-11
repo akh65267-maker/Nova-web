@@ -9,9 +9,9 @@ import { ErrorMessage } from "@taskmanager/ui/components/error-message";
 import { EmptyState } from "@taskmanager/ui/components/empty-state";
 import { Separator } from "@taskmanager/ui/components/separator";
 import { useCartStore, useCartSubtotal } from "@/store/cart-store";
-import { useCreateOrder } from "@/features/orders/use-orders";
-import { useRequireAuth } from "@/features/auth/use-require-auth";
-import { getApiErrorMessage } from "@/lib/api-error";
+import { useCreateOrder } from "@taskmanager/api/use-orders";
+import { useRequireAuth } from "@taskmanager/auth/use-require-auth";
+import { getApiErrorMessage } from "@taskmanager/api/errors";
 
 export default function CheckoutPage() {
   const router = useRouter();

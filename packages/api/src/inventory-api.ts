@@ -1,4 +1,4 @@
-import { apiClient } from "@/lib/api-client";
+import { apiClient } from "./client";
 
 export type InventoryItemDto = { productId: string; quantityAvailable: number };
 

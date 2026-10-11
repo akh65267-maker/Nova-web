@@ -14,10 +14,10 @@ import { SearchX } from "lucide-react";
 import { ErrorState } from "@/components/error-state";
 import { EmptyState } from "@taskmanager/ui/components/empty-state";
 import { Skeleton } from "@taskmanager/ui/components/skeleton";
-import { useProducts } from "@/features/catalog/use-products";
+import { useProducts } from "@taskmanager/api/use-products";
 import { ProductCard } from "@/features/catalog/product-card";
 import { ProductFilters, MAX_PRICE, type FilterState } from "@/features/catalog/product-filters";
-import type { ProductListParams } from "@/features/catalog/api";
+import type { ProductListParams } from "@taskmanager/api/catalog-api";
 
 const PAGE_SIZE = 12;
 

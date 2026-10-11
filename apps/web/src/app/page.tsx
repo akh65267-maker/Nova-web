@@ -2,7 +2,7 @@ import type { CSSProperties } from "react";
 import Link from "next/link";
 import { Button } from "@taskmanager/ui/components/button";
 import { Card, CardContent } from "@taskmanager/ui/components/card";
-import { CATEGORIES } from "@/features/catalog/categories";
+import { CATEGORIES } from "@taskmanager/api/categories";
 import { NewArrivals } from "@/features/catalog/product-row";
 import { ProductIllustration } from "@/features/catalog/product-illustration";
 import { cn } from "@/lib/utils";

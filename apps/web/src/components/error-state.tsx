@@ -1,7 +1,7 @@
 import { TriangleAlert } from "lucide-react";
 import { Button } from "@taskmanager/ui/components/button";
 import { EmptyState } from "@taskmanager/ui/components/empty-state";
-import { getApiErrorMessage } from "@/lib/api-error";
+import { getApiErrorMessage } from "@taskmanager/api/errors";
 
 // Shown in place of a page's content when its data could not be loaded. Without it a failed
 // request looks like an empty list or a skeleton that never resolves.

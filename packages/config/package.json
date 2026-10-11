@@ -1,0 +1,14 @@
+{
+  "name": "@taskmanager/config",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Shared ESLint and TypeScript configuration for the apps and packages.",
+  "exports": {
+    "./eslint": "./eslint.mjs",
+    "./tsconfig.base.json": "./tsconfig.base.json"
+  },
+  "dependencies": {
+    "eslint": "^9",
+    "eslint-config-next": "16.3.4"
+  }
+}

@@ -7,7 +7,7 @@ import { Card, CardContent, CardFooter } from "@taskmanager/ui/components/card";
 import { Button } from "@taskmanager/ui/components/button";
 import { useCartStore } from "@/store/cart-store";
 import { toast } from "sonner";
-import type { ProductDto } from "./api";
+import type { ProductDto } from "@taskmanager/api/catalog-api";
 import { ProductIllustration } from "./product-illustration";
 
 export function ProductCard({ product }: { product: ProductDto }) {

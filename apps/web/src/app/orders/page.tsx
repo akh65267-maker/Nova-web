@@ -8,8 +8,8 @@ import { Card, CardContent } from "@taskmanager/ui/components/card";
 import { EmptyState } from "@taskmanager/ui/components/empty-state";
 import { ErrorState } from "@/components/error-state";
 import { Skeleton } from "@taskmanager/ui/components/skeleton";
-import { useOrders } from "@/features/orders/use-orders";
-import { useRequireAuth } from "@/features/auth/use-require-auth";
+import { useOrders } from "@taskmanager/api/use-orders";
+import { useRequireAuth } from "@taskmanager/auth/use-require-auth";
 import { ORDER_STATUS } from "@/features/orders/status";
 
 export default function OrdersPage() {

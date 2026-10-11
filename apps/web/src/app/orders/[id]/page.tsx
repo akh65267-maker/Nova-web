@@ -9,9 +9,9 @@ import { Separator } from "@taskmanager/ui/components/separator";
 import { ErrorState } from "@/components/error-state";
 import { Skeleton } from "@taskmanager/ui/components/skeleton";
 import { ORDER_STATUS } from "@/features/orders/status";
-import { useOrder } from "@/features/orders/use-orders";
+import { useOrder } from "@taskmanager/api/use-orders";
 import { cn } from "@/lib/utils";
-import { useRequireAuth } from "@/features/auth/use-require-auth";
+import { useRequireAuth } from "@taskmanager/auth/use-require-auth";
 
 export default function OrderDetailPage(props: PageProps<"/orders/[id]">) {
   const { id } = use(props.params);

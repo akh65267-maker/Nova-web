@@ -5,7 +5,7 @@ import Link from "next/link";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@taskmanager/ui/components/button";
 import { Skeleton } from "@taskmanager/ui/components/skeleton";
-import { useProducts } from "./use-products";
+import { useProducts } from "@taskmanager/api/use-products";
 import { ProductCard } from "./product-card";
 
 const ITEM = "w-56 shrink-0 snap-start sm:w-60";

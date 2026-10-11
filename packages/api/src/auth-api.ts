@@ -1,4 +1,4 @@
-import { apiClient } from "@/lib/api-client";
+import { apiClient } from "./client";
 
 export type LoginRequest = { email: string; password: string };
 export type LoginResult = { token: string; expiresAtUtc: string };

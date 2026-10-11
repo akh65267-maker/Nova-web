@@ -35,10 +35,10 @@ src/
     layout/     SiteHeader, SiteFooter, CartDrawer
     ui/         shadcn/ui primitives
   features/     Feature slices: auth, catalog, inventory, orders
-                  <feature>/api.ts        Axios calls + DTO types
-                  <feature>/use-*.ts      React Query hooks
                   <feature>/*.tsx         feature-specific components
-  lib/          api-client, api-error, jwt, utils
+                (the Axios calls, DTO types and React Query hooks moved to
+                 packages/api; the session to packages/auth: see "Shared packages")
+  lib/          api (wires @taskmanager/api to this app), query-client, utils
   providers/    QueryProvider, StoreHydrator
   store/        Zustand stores (auth, cart)
 ```
@@ -102,7 +102,7 @@ LoginPage → useLogin() → POST /users/login → { token, expiresAtUtc }
 
 ## Authorization / Roles
 
-- Role is read **client-side from the JWT** by `src/lib/jwt.ts`, from the claim
+- Role is read **client-side from the JWT** by `packages/auth/src/jwt.ts`, from the claim
   `http://schemas.microsoft.com/ws/2008/06/identity/claims/role`. `isAdmin()` is true when that
   claim equals `"Admin"` and the session is unexpired. The token is decoded with `atob` — the
   signature is never verified in the browser.
@@ -115,17 +115,17 @@ LoginPage → useLogin() → POST /users/login → { token, expiresAtUtc }
 
 ## API Client
 
-`src/lib/api-client.ts` exports a single Axios instance.
+`@taskmanager/api/client` exports a single Axios instance, `apiClient`, and `configureApi()`; each app calls `configureApi` once at startup (the shop does it in `src/lib/api.ts`, imported by the query provider). A request made before that throws a clear error.
 
 | Concern | Implementation |
 |---|---|
-| Base URL | `process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000"` (the API gateway) |
-| Auth header | Request interceptor, Bearer from the auth store |
-| 401 | Response interceptor → `logout()`, error re-thrown |
+| Base URL | Given to `configureApi` by the app: `process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000"` (the API gateway) |
+| Auth header | Request interceptor, Bearer from the app's `getToken` (the shop reads the auth store) |
+| 401 | Response interceptor → the app's `onUnauthorized` (the shop: `logout()` and clear the query cache; the cart is kept), error re-thrown |
 | Other statuses | Not intercepted; handled per-call by React Query |
 | Error messages | `getApiErrorMessage(error, fallback)` reads ProblemDetails `detail` then `title` |
 
-All calls are centralized in `features/*/api.ts`. Backend paths used, matching the gateway
+All calls are centralized in `packages/api/src/*-api.ts`. Backend paths used, matching the gateway
 route prefixes: `/users`, `/products`, `/inventory`, `/orders`. (`/tasks` and `/basket` exist on
 the gateway but the frontend calls neither.)
 
@@ -187,7 +187,7 @@ own `unitPrice`.
   `router.push` and resets `page` unless `page` is the field being changed.
 - Sort options: `newest | price-asc | price-desc | name`. Price slider range is `0–200`
   (`MAX_PRICE`); values at the bounds are omitted from the request.
-- Categories are a hardcoded frontend constant (`src/features/catalog/categories.ts`), not
+- Categories are a hardcoded frontend constant (`packages/api/src/categories.ts`), not
   fetched from the backend.
 - Detail page combines `useProduct(id)` and `useInventory(id)`; add-to-cart is disabled while
   inventory loads or when `quantityAvailable === 0`.
@@ -218,6 +218,23 @@ The shadcn/Base UI primitives (`button`, `card`, `dialog`, `select`, `sheet`, `t
 - **What stayed in the app, and why:** `error-state` (it formats errors with the API helper, which belongs with the API client) and `rive-player` (a shop-only library). `src/lib/utils.ts` is a one-line re-export of `cn`, so existing imports keep working.
 - **Adding a component:** the shadcn CLI is **not** set up to write into the package. Its monorepo mode did not resolve the package alias here (it produced a path outside the repository, so that configuration was removed). Run `npx shadcn add <name>` in `apps/web` (it lands in `apps/web/src/components/ui`), then move the file into `packages/ui/src/components`, change its `@/...` imports to relative ones, and import it through `@taskmanager/ui`.
 - **Linting:** the package has its own `eslint.config.mjs` (the app's rules minus the one that looks for a `pages` directory). When a third config appears, extract them into a shared `packages/config`.
+
+## Shared packages (`packages/api`, `packages/auth`, `packages/config`)
+
+Beside `packages/ui` (above), three more packages exist so that a second app does not copy code:
+
+| Package | Contains | Imported as |
+|---|---|---|
+| `@taskmanager/api` | the Axios client and `configureApi`; `getApiErrorMessage`; one `*-api.ts` per backend area (auth, catalog, inventory, orders) with its DTO types; the React Query hooks (`use-products`, `use-inventory`, `use-orders`); the product `categories` | `@taskmanager/api/client`, `.../errors`, `.../catalog-api`, `.../use-products`, ... |
+| `@taskmanager/auth` | the persisted auth store (`tm-auth`), the JWT helper, `useLogin`/`useRegister`/`useCurrentUser`/`useLogout`, and `useRequireAuth` | `@taskmanager/auth/auth-store`, `.../use-auth`, `.../use-require-auth`, `.../jwt` |
+| `@taskmanager/config` | the shared ESLint rules (`base`, and `library()` for a package) and `tsconfig.base.json` | `@taskmanager/config/eslint`, `.../tsconfig.base.json` |
+
+How they fit together, and the two places where an app still has to supply something:
+- **Dependencies point one way:** `auth` uses `api`; `api` and `ui` use nothing of ours; an app uses all of them. Nothing in a package imports from an app. That is why the API client no longer imports the auth store or the query client: it asks the app (`getToken`, `onUnauthorized`).
+- **`useLogout` is in two parts.** The package one ends the session and clears the query cache, and accepts `onLoggedOut`. The shop's `src/features/auth/use-logout.ts` wraps it and empties the cart there, so the package knows nothing about carts. Import `useLogout` from the app wrapper.
+- **`react-query`, `react` and `next` are peer dependencies** of the packages: there must be exactly one copy of each in the app's bundle, or hooks break in confusing ways.
+- **No build step.** The apps' bundler compiles the packages' TypeScript directly (Turbopack transpiles workspace packages by itself).
+- **Where a moved file went:** `lib/api-client.ts` → `packages/api/src/client.ts`; `lib/api-error.ts` → `errors.ts`; `features/*/api.ts` → `packages/api/src/*-api.ts`; `features/*/use-*.ts` (catalog, inventory, orders) → `packages/api/src/use-*.ts`; `features/catalog/categories.ts` → `categories.ts`; `lib/jwt.ts`, `store/auth-store.ts`, `features/auth/use-auth.ts`, `features/auth/use-require-auth.ts` → `packages/auth/src/`.
 
 ## UI Architecture
 

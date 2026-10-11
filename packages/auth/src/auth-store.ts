@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { getRole } from "@/lib/jwt";
+import { getRole } from "./jwt";
 
 type AuthState = {
   token: string | null;

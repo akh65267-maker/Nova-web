@@ -1,5 +1,5 @@
 import { CheckCircle2, Clock, XCircle } from "lucide-react";
-import type { OrderStatus } from "./api";
+import type { OrderStatus } from "@taskmanager/api/orders-api";
 
 // One place for how an order status looks, shared by the list and the detail page.
 export const ORDER_STATUS = {

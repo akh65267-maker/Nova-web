@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { createInventory, getInventory, listInventory, restockInventory } from "./api";
+import { createInventory, getInventory, listInventory, restockInventory } from "./inventory-api";
 
 export function useInventory(productId: string) {
   return useQuery({

@@ -23,12 +23,12 @@ import {
 } from "@taskmanager/ui/components/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@taskmanager/ui/components/table";
 import { Skeleton } from "@taskmanager/ui/components/skeleton";
-import { useProducts, useCreateProduct } from "@/features/catalog/use-products";
-import { useCreateInventory, useInventoryList, useRestockInventory } from "@/features/inventory/use-inventory";
-import { CATEGORIES } from "@/features/catalog/categories";
+import { useProducts, useCreateProduct } from "@taskmanager/api/use-products";
+import { useCreateInventory, useInventoryList, useRestockInventory } from "@taskmanager/api/use-inventory";
+import { CATEGORIES } from "@taskmanager/api/categories";
 import { ErrorMessage } from "@taskmanager/ui/components/error-message";
 import { ErrorState } from "@/components/error-state";
-import { getApiErrorMessage } from "@/lib/api-error";
+import { getApiErrorMessage } from "@taskmanager/api/errors";
 
 function NewProductDialog() {
   const [open, setOpen] = useState(false);

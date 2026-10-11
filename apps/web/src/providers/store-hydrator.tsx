@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { useAuthStore } from "@/store/auth-store";
+import { useAuthStore } from "@taskmanager/auth/auth-store";
 import { useCartStore } from "@/store/cart-store";
 
 export function StoreHydrator() {
