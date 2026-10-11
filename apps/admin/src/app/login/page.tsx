@@ -17,7 +17,7 @@ const NOT_ADMIN = "That account is not an administrator.";
 // Only a path inside this app: the value comes from the URL, so an absolute or protocol-relative
 // address would send the person somewhere else after signing in.
 function safeRedirect(value: string | null): string {
-  return value && value.startsWith("/") && !value.startsWith("//") ? value : "/products";
+  return value && value.startsWith("/") && !value.startsWith("//") ? value : "/dashboard";
 }
 
 export default function LoginPage() {

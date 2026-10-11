@@ -58,3 +58,25 @@ test("an administrator signs in, sees the products and signs out", async ({ page
   await page.goto("/products");
   await expect(page).toHaveURL(/\/login/);
 });
+
+test("an administrator sees the dashboard figures and can change the period", async ({ page }) => {
+  test.skip(!adminEmail || !adminPassword, "set ADMIN_EMAIL and ADMIN_PASSWORD to run the administrator flow");
+
+  await page.goto("/login");
+  await page.getByLabel("Email").fill(adminEmail!);
+  await page.getByLabel("Password").fill(adminPassword!);
+  await page.getByRole("button", { name: "Sign in" }).click();
+
+  // Signing in without a destination lands on the dashboard.
+  await expect(page).toHaveURL(/\/dashboard$/);
+  await expect(page.getByRole("heading", { name: "Dashboard" })).toBeVisible();
+  for (const title of ["Orders", "Revenue", "Average order value", "Cancellation rate"]) {
+    await expect(page.getByText(title, { exact: true })).toBeVisible();
+  }
+  await expect(page.getByText("(UTC)")).toBeVisible();
+
+  const thirty = page.getByRole("button", { name: "30 days" });
+  await thirty.click();
+  await expect(thirty).toHaveAttribute("aria-pressed", "true");
+  await expect(page.getByText("Revenue excludes tax, shipping")).toBeVisible();
+});

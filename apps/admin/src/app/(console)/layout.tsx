@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ArrowLeft, LogOut, Package, ShieldCheck, type LucideIcon } from "lucide-react";
+import { ArrowLeft, LayoutDashboard, LogOut, Package, ShieldCheck, type LucideIcon } from "lucide-react";
 import { Button } from "@taskmanager/ui/components/button";
 import { Skeleton } from "@taskmanager/ui/components/skeleton";
 import { cn } from "@taskmanager/ui/lib/utils";
@@ -13,6 +13,7 @@ const SHOP_URL = process.env.NEXT_PUBLIC_SHOP_URL ?? "http://localhost:3100";
 
 // Add a section here and it appears in the sidebar (and the mobile tab row).
 const NAV: { href: string; label: string; icon: LucideIcon }[] = [
+  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/products", label: "Products", icon: Package },
 ];
 
