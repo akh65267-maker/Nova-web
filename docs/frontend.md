@@ -4,6 +4,8 @@ Repo: `taskmanager-web` (separate from the `TaskManager` backend repo).
 Verified against source on 2026-09-19 (through commit `7df89c2`). Source code is the ultimate truth — if this
 document disagrees with the code, the code wins.
 
+> **Repository layout.** The app now lives in `apps/web/` inside an npm-workspaces monorepo (the split is described in the backend repo's `docs/admin-dashboard-plan.md`, section 4). Every `src/...`, `e2e/...` and `public/...` path in this document is relative to `apps/web/`. Run `npm run dev`, `lint`, `build` and `test:e2e` from the repository root. The commit hook (Husky, lint-staged) is configured in the root `package.json` and runs ESLint inside the workspace of each staged file; add a line there for each new app or package.
+
 ## Overview
 
 | Item | Value |
