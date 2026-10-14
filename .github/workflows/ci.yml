@@ -13,10 +13,9 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  # The backend branch the end-to-end tests run against. The admin pages need the admin
-  # endpoints, which are on the backend's scale-out branch until its pull request is merged;
-  # after that merge, change this to main.
-  BACKEND_REF: scale-out
+  # The backend branch the end-to-end tests run against. Change it only to test against
+  # a backend branch that has not been merged yet.
+  BACKEND_REF: main
 
 jobs:
   build:
