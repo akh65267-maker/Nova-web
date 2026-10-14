@@ -1,0 +1,96 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+@import "@taskmanager/ui/theme.css";
+
+/* Tailwind scans the app's own files by itself; the package is outside the app, so say where. */
+@source "../../../../packages/ui/src";
+
+/* ── Hero motion ─────────────────────────────────────────
+   CSS only, hero only. Entrance and float run everywhere; the scroll-linked
+   parts need animation-timeline and are skipped where it is unsupported.
+   Everything is switched off for prefers-reduced-motion. */
+@keyframes hero-rise {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+}
+
+@keyframes hero-float {
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+.hero-rise {
+  animation: hero-rise 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  animation-delay: calc(var(--i, 0) * 90ms);
+}
+
+.hero-float {
+  animation: hero-float calc(5s + var(--i, 0) * 0.8s) ease-in-out infinite;
+  animation-delay: calc(var(--i, 0) * -1.3s);
+}
+
+@supports (animation-timeline: scroll()) {
+  @keyframes hero-text-out {
+    to {
+      opacity: 0;
+      transform: translateY(-40px);
+    }
+  }
+
+  @keyframes hero-tiles-out {
+    to {
+      opacity: 0.2;
+      transform: translateY(60px) scale(0.94);
+    }
+  }
+
+  .hero-scroll-text {
+    animation: hero-text-out linear both;
+    animation-timeline: scroll(root);
+    animation-range: 0 55vh;
+  }
+
+  .hero-scroll-tiles {
+    animation: hero-tiles-out linear both;
+    animation-timeline: scroll(root);
+    animation-range: 0 70vh;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-rise,
+  .hero-float,
+  .hero-scroll-text,
+  .hero-scroll-tiles {
+    animation: none;
+  }
+}
+
+
+/* ── Reveal on scroll ────────────────────────────────────
+   Home page sections ease in as they enter the viewport. Without animation-timeline support
+   the sections simply show, and reduced motion turns it off. */
+@supports (animation-timeline: view()) {
+  @keyframes reveal {
+    from {
+      opacity: 0;
+      transform: translateY(24px);
+    }
+  }
+
+  .reveal {
+    animation: reveal linear both;
+    animation-timeline: view();
+    animation-range: entry 0% entry 40%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal {
+    animation: none;
+  }
+}

@@ -1,36 +1,34 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# taskmanager-web
 
-## Getting Started
+The storefront (and soon the admin) for the TaskManager backend, a Next.js 16 app in an npm-workspaces monorepo. Architecture and conventions: [docs/frontend.md](docs/frontend.md). The backend lives in the separate `TaskManager` repository.
 
-First, run the development server:
+## Repository layout
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+```
+apps/web/        the shop (Next.js App Router), port 3100
+apps/admin/      the admin console, port 3200
+packages/ui/     shared UI primitives and the design tokens (@taskmanager/ui)
+packages/api/    the API client, DTO types and React Query hooks (@taskmanager/api)
+packages/auth/   the session store and sign-in hooks (@taskmanager/auth)
+packages/config/ shared ESLint and tsconfig (@taskmanager/config)
+docs/            documentation
+package.json     the workspace root: scripts, git hooks, lint-staged
 ```
 
-Open [http://localhost:3100](http://localhost:3100) with your browser to see the result. The port is 3100, not the Next.js default of 3000, because the API gateway only allows that origin (CORS); on any other port the page loads but its API calls are blocked.
+All paths in `docs/frontend.md` that start with `src/`, `e2e/` or `public/` are relative to `apps/web/`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Getting started
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm install          # once, from the repository root
+npm run dev          # the shop, on http://localhost:3100
+npm run dev:admin    # the admin, on http://localhost:3200 (a second terminal)
+npm run lint
+npm run build
+npm run test:e2e     # both apps; needs the backend stack running (Docker, in the TaskManager repo)
+                     # set ADMIN_EMAIL and ADMIN_PASSWORD to include the administrator flow
+```
 
-## Learn More
+The ports are 3100 and 3200, not the Next.js default of 3000, because the API gateway only allows those two origins (CORS); on any other port the page loads but its API calls are blocked.
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Settings live in each app's `.env.local` (see the `.env.local.example` beside it).

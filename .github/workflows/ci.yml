@@ -5,6 +5,17 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+  workflow_dispatch:
+
+# A newer push to the same branch makes the older run pointless.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # The backend branch the end-to-end tests run against. Change it only to test against
+  # a backend branch that has not been merged yet.
+  BACKEND_REF: main
 
 jobs:
   build:
@@ -31,9 +42,71 @@ jobs:
       # doesn't exist yet on a fresh checkout. `next build` runs its own
       # full TypeScript check internally as part of the build, so that's
       # the single source of truth here instead.
-      #
-      # No test suite exists yet for this project either. A real backend
-      # isn't reachable in CI, so this build only proves the app compiles
-      # and prerenders, not that API calls work.
       - name: Build
         run: npm run build
+
+  # The end-to-end tests of both apps, against the real backend: what they exist to catch is
+  # the frontend and the gateway disagreeing, which a mocked API cannot show. The backend is
+  # started from its own repository by one script (deploy/scripts/e2e-stack.sh), with
+  # throwaway secrets generated on the runner; nothing here is a real credential.
+  e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/checkout@v4
+        with:
+          repository: akh65267-maker/TaskManager
+          ref: ${{ env.BACKEND_REF }}
+          path: backend
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install the browser
+        run: npx playwright install --with-deps chromium
+
+      - name: Start the backend
+        run: bash backend/deploy/scripts/e2e-stack.sh up
+
+      # The script generated an admin account in backend/deploy/.env. Hand it to the tests
+      # through the environment, and keep it out of the logs.
+      - name: Read the generated admin account
+        run: |
+          for name in ADMIN_EMAIL ADMIN_PASSWORD; do
+            value="$(grep -E "^$name=" backend/deploy/.env | cut -d= -f2-)"
+            echo "::add-mask::$value"
+            echo "$name=$value" >> "$GITHUB_ENV"
+          done
+
+      - name: End-to-end tests
+        run: npm run test:e2e
+
+      - name: Keep the test reports
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-reports
+          path: |
+            apps/web/playwright-report
+            apps/admin/playwright-report
+            apps/web/test-results
+            apps/admin/test-results
+          if-no-files-found: ignore
+          retention-days: 7
+
+      - name: Show what the backend logged
+        if: failure()
+        run: docker compose -f backend/deploy/docker-compose.yml logs --no-color --tail 80 gateway users-api catalog-api inventory-api basket-api order-api
+
+      - name: Stop the backend
+        if: always()
+        run: bash backend/deploy/scripts/e2e-stack.sh down
