@@ -19,7 +19,7 @@ document disagrees with the code, the code wins.
 | Icons / toasts | lucide-react / sonner |
 | Theming | `next-themes` (`ThemeProvider`, class strategy, header toggle) |
 | Animation | `@rive-app/react-canvas` via `RivePlayer` — scaffolded only; no `.riv` files and no live usage yet |
-| Tests | Playwright end-to-end only (`e2e/`, `npm run test:e2e`), run locally against the real backend. No unit tests. CI (`.github/workflows/ci.yml`) runs `npm run lint` + `npm run build` only — see Testing |
+| Tests | Playwright end-to-end only (`e2e/`, `npm run test:e2e`), run locally against the real backend. No unit tests. CI (`.github/workflows/ci.yml`) runs lint + build, and the end-to-end tests of both apps against a real backend — see Testing |
 | Git hooks | Husky `pre-commit` → `lint-staged` → `eslint --fix` on staged `*.ts`/`*.tsx` |
 
 The app is a storefront over the backend microservices, reached through the API gateway.
@@ -297,12 +297,11 @@ port 3100, or starts one there; the port is fixed because the gateway's CORS pol
 
 The checkout test registers a new `e2e+<id>@example.com` user on each run, and buys one unit of
 the first catalog product that has a non-zero price and stock (found via the public
-`GET /products` and `GET /inventory`). It skips, rather than fails, when no such product
-exists. Each run therefore leaves a test user and an order behind and consumes one unit of
+`GET /products` and `GET /inventory`). Locally it skips, rather than fails, when no such product
+exists (in CI it fails: see below). Each run therefore leaves a test user and an order behind and consumes one unit of
 stock — acceptable on a local dev stack, not something to point at shared data.
 
-The tests are not in CI: GitHub Actions has no backend to reach. Running them there would
-mean starting the backend stack in the workflow.
+**In CI.** The `e2e` job in `.github/workflows/ci.yml` runs both apps' tests against a real backend. It checks out the backend repository (`BACKEND_REF` at the top of the workflow: the backend's `scale-out` branch until its pull request is merged, then `main`) and runs its `deploy/scripts/e2e-stack.sh up`, which writes a `.env` of random secrets, starts the databases, applies every migration, starts the services and seeds one product with stock. The runner hands the generated admin account to the tests through the environment (masked in the log), so the administrator tests run too. In CI (`CI` set) a missing product is a failure, not a skip, because a skipped checkout test would pass for nothing. Reports and the backend's logs are kept when the job fails, and the stack is torn down either way. The same script runs the stack locally: it refuses to run where a `deploy/.env` already exists.
 
 ## Important Conventions
 
@@ -319,7 +318,7 @@ mean starting the backend stack in the workflow.
 ## Known Issues / Uncertainties
 
 - **Test coverage is thin.** Two end-to-end tests cover catalog loading and the checkout path
-  (see Testing); there are no unit or component tests, and CI still verifies only lint + build.
+  (see Testing); there are no unit or component tests. CI runs lint, build and these end-to-end tests.
   Most behavior above is read from source, not from test evidence.
 - Order pricing is client-supplied: checkout sends `unitPrice` from the local cart.
   Verified in the backend (2026-09-19): `OrderService` does **not** re-validate — it stores the

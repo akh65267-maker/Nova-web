@@ -24,7 +24,13 @@ async function findPurchasableProduct(request: APIRequestContext): Promise<Produ
   const stock = new Map(inventory.map((i) => [i.productId, i.quantityAvailable]));
   const product = items.find((p) => p.price > 0 && (stock.get(p.id) ?? 0) > 0);
 
-  test.skip(!product, "No product with price > 0 and stock available - seed one to run checkout");
+  // Locally an empty catalog just skips these tests. In CI it is a failure: the backend there
+  // is started with a seeded product, and a skipped checkout test would pass for nothing.
+  if (process.env.CI) {
+    expect(product, "CI's backend should have a seeded product with stock").toBeTruthy();
+  } else {
+    test.skip(!product, "No product with price > 0 and stock available - seed one to run checkout");
+  }
   return product!;
 }
 
