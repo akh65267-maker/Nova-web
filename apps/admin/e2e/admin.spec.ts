@@ -110,7 +110,8 @@ test("an administrator sees the dashboard figures and can change the period", as
   await expect(page).toHaveURL(/\/dashboard$/);
   await expect(page.getByRole("heading", { name: "Dashboard" })).toBeVisible();
   for (const title of ["Orders", "Revenue", "Average order value", "Cancellation rate"]) {
-    await expect(page.getByText(title, { exact: true })).toBeVisible();
+    // The card titles only: "Orders" is also the sidebar link.
+    await expect(page.locator("[data-slot=card-title]").filter({ hasText: new RegExp(`^${title}$`) })).toBeVisible();
   }
   await expect(page.getByText("(UTC)")).toBeVisible();
 
