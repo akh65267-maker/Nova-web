@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
+import Link from "next/link";
 import { Ban, CheckCircle2, PackageCheck } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@taskmanager/ui/components/card";
 import { EmptyState } from "@taskmanager/ui/components/empty-state";
@@ -164,7 +165,9 @@ export function StuckOrders() {
             {pending.data.map((o) => (
               <TableRow key={o.id}>
                 <TableCell className="font-mono text-xs" title={`Order ${o.id}, user ${o.userId}`}>
-                  {o.id.slice(0, 8)}
+                  <Link href={`/orders/${o.id}`} className="underline-offset-4 hover:underline">
+                    {o.id.slice(0, 8)}
+                  </Link>
                 </TableCell>
                 <TableCell>{age(o.ageSeconds)}</TableCell>
                 <TableCell className="text-right tabular-nums">${o.total.toFixed(2)}</TableCell>

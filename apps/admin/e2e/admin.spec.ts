@@ -86,3 +86,33 @@ test("an administrator sees the dashboard figures and can change the period", as
   }
   await expect(page.locator("[data-slot=skeleton]")).toHaveCount(0);
 });
+
+test("an administrator browses orders, filters them and opens one", async ({ page }) => {
+  test.skip(!adminEmail || !adminPassword, "set ADMIN_EMAIL and ADMIN_PASSWORD to run the administrator flow");
+
+  await page.goto("/login?redirect=%2Forders");
+  await page.getByLabel("Email").fill(adminEmail!);
+  await page.getByLabel("Password").fill(adminPassword!);
+  await page.getByRole("button", { name: "Sign in" }).click();
+
+  await expect(page.getByRole("heading", { name: "Orders" })).toBeVisible();
+  await expect(page.getByRole("table")).toBeVisible();
+
+  // Filtering to one status leaves only that status in the table.
+  await page.getByRole("button", { name: "Cancelled", exact: true }).click();
+  await expect(page.getByRole("button", { name: "Cancelled", exact: true })).toHaveAttribute("aria-pressed", "true");
+  const badges = page.getByRole("table").locator("tbody tr td:nth-child(3)");
+  await expect(badges.first()).toContainText("Cancelled");
+  for (const text of await badges.allTextContents()) expect(text).toContain("Cancelled");
+
+  // Open the first order: its lines, its reason and the customer.
+  await page.getByRole("table").locator("tbody tr a").first().click();
+  await expect(page).toHaveURL(/\/orders\/[0-9a-f-]{36}$/);
+  await expect(page.getByText("Items", { exact: true })).toBeVisible();
+  await expect(page.getByText("Reason", { exact: true })).toBeVisible();
+  await expect(page.getByText("Customer", { exact: true })).toBeVisible();
+
+  // An id that does not exist says so instead of failing.
+  await page.goto("/orders/00000000-0000-0000-0000-000000000000");
+  await expect(page.getByText("Order not found")).toBeVisible();
+});
