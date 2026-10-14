@@ -19,7 +19,8 @@ export default defineConfig({
   fullyParallel: false,
   forbidOnly: !!process.env.CI,
   retries: 0,
-  reporter: [["list"], ["html", { open: "never" }]],
+  // In CI, "github" turns each failure into an annotation on the run, readable without opening the log.
+  reporter: process.env.CI ? [["github"], ["list"], ["html", { open: "never" }]] : [["list"], ["html", { open: "never" }]],
   use: {
     baseURL,
     trace: "retain-on-failure",
