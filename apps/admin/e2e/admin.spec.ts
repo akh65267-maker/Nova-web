@@ -79,4 +79,10 @@ test("an administrator sees the dashboard figures and can change the period", as
   await thirty.click();
   await expect(thirty).toHaveAttribute("aria-pressed", "true");
   await expect(page.getByText("Revenue excludes tax, shipping")).toBeVisible();
+
+  // The rest of the dashboard: each panel shows data or its own empty state, never a stuck skeleton.
+  for (const heading of ["Orders per day", "Revenue per day", "Why orders were cancelled", "Stuck in Pending", "Low stock"]) {
+    await expect(page.getByText(heading, { exact: true })).toBeVisible();
+  }
+  await expect(page.locator("[data-slot=skeleton]")).toHaveCount(0);
 });

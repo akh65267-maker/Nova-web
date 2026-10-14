@@ -25,3 +25,35 @@ export async function getOrderSummary(from: string, to: string): Promise<OrderSu
   const { data } = await apiClient.get<OrderSummary>("/orders/admin/summary", { params: { from, to } });
   return data;
 }
+
+export type DailyPoint = {
+  day: string; // YYYY-MM-DD, UTC
+  orders: number;
+  pending: number;
+  confirmed: number;
+  cancelled: number;
+  revenue: number;
+};
+
+export type Timeseries = { from: string; to: string; days: DailyPoint[] };
+
+export async function getTimeseries(from: string, to: string): Promise<Timeseries> {
+  const { data } = await apiClient.get<Timeseries>("/orders/admin/timeseries", { params: { from, to } });
+  return data;
+}
+
+export type CancellationReasonCount = { reason: string; count: number };
+
+export async function getCancellations(from: string, to: string): Promise<CancellationReasonCount[]> {
+  const { data } = await apiClient.get<CancellationReasonCount[]>("/orders/admin/cancellations", {
+    params: { from, to },
+  });
+  return data;
+}
+
+export type PendingOrder = { id: string; userId: string; createdAtUtc: string; total: number; ageSeconds: number };
+
+export async function getPendingOrders(minAgeSeconds?: number): Promise<PendingOrder[]> {
+  const { data } = await apiClient.get<PendingOrder[]>("/orders/admin/pending", { params: { minAgeSeconds } });
+  return data;
+}

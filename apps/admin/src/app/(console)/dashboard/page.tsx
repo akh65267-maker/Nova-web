@@ -10,6 +10,7 @@ import { cn } from "@taskmanager/ui/lib/utils";
 import { useOrderSummary } from "@taskmanager/api/use-analytics";
 import { getApiErrorMessage } from "@taskmanager/api/errors";
 import { change, firstDay, lastDay, PERIODS, periodRange } from "@/lib/period";
+import { CancellationReasons, DailyCharts, LowStock, StuckOrders } from "./sections";
 
 const number = (n: number) => n.toLocaleString("en-US");
 const money = (n: number | null) =>
@@ -172,6 +173,15 @@ export default function DashboardPage() {
           </p>
         </>
       )}
+
+      <DailyCharts from={from} to={to} />
+
+      <div className="grid gap-4 lg:grid-cols-2">
+        <CancellationReasons from={from} to={to} />
+        <StuckOrders />
+      </div>
+
+      <LowStock />
     </div>
   );
 }
