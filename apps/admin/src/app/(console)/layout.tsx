@@ -6,8 +6,8 @@ import { ArrowLeft, LayoutDashboard, LogOut, Package, ReceiptText, ShieldCheck, 
 import { Button } from "@taskmanager/ui/components/button";
 import { Skeleton } from "@taskmanager/ui/components/skeleton";
 import { cn } from "@taskmanager/ui/lib/utils";
-import { useLogout } from "@taskmanager/auth/use-auth";
-import { useRequireAuth } from "@taskmanager/auth/use-require-auth";
+import { useSessionLogout } from "@taskmanager/auth/use-session";
+import { useRequireSession } from "@taskmanager/auth/use-require-session";
 
 const SHOP_URL = process.env.NEXT_PUBLIC_SHOP_URL ?? "http://localhost:3100";
 
@@ -22,8 +22,8 @@ const NAV: { href: string; label: string; icon: LucideIcon }[] = [
 // sign-in page with a notice (sending them to "/" would only bounce them back here).
 export default function ConsoleLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const logout = useLogout();
-  const { isReady } = useRequireAuth(`/login?redirect=${encodeURIComponent(pathname)}`, {
+  const logout = useSessionLogout();
+  const { isReady } = useRequireSession(`/login?redirect=${encodeURIComponent(pathname)}`, {
     requireAdmin: true,
     forbiddenRedirectTo: "/login?forbidden=1",
   });

@@ -12,6 +12,13 @@ export type SessionConfig = {
   /** Where the proxy route is mounted. Default "/api/proxy". */
   proxyPrefix?: string;
   /**
+   * Only accounts with this role may have a session in this app (the admin app: "Admin"). Checked
+   * where it cannot be skipped: at sign-in the account is refused, and the sign-in it had just
+   * made is revoked, so no cookie is ever set; and again whenever the session is read or renewed,
+   * so an administrator who has been demoted loses access at the next renewal.
+   */
+  requiredRole?: string;
+  /**
    * For tests: use a refresh coordinator of its own instead of the one shared by the whole server
    * process, so what one test refreshed cannot be remembered by the next.
    */
@@ -73,6 +80,8 @@ export function createSessionHandlers(config: SessionConfig): SessionHandlers {
 
   const clearedCookies = (secure: boolean): string[] => [clearCookie(names.access, secure), clearCookie(names.refresh, secure)];
 
+  const roleAllowed = (role: string): boolean => !config.requiredRole || role === config.requiredRole;
+
   return {
     async login(request) {
       if (!originAllowed(request)) return json(403, { title: "Forbidden" });
@@ -105,6 +114,13 @@ export function createSessionHandlers(config: SessionConfig): SessionHandlers {
       const pair = (await gatewayResponse.json()) as TokenPair;
       const claims = readClaims(pair.token);
       if (!claims) return json(502, { title: "The service answered with something unreadable." });
+
+      // The password was right but this account may not use this app. The gateway has already issued
+      // it a refresh token: revoke it, set no cookie, and say so.
+      if (!roleAllowed(claims.role)) {
+        await logoutAtGateway(gatewayUrl, pair.refreshToken, clientAddress(request.headers));
+        return json(403, { title: "Forbidden", detail: "This account is not allowed to sign in here." });
+      }
 
       // The page is told who signed in, never the tokens.
       return json(200, { user: { id: claims.id, email: claims.email, role: claims.role } }, sessionCookies(pair, isSecureRequest(request)));
@@ -144,6 +160,8 @@ export function createSessionHandlers(config: SessionConfig): SessionHandlers {
       const claims = secondsUntilExpiry(access, Date.now()) > 0 ? readClaims(access) : null;
       if (!claims) return json(200, { authenticated: false }, setCookies);
 
+      if (!roleAllowed(claims.role)) return json(200, { authenticated: false }, clearedCookies(secure));
+
       return json(200, { authenticated: true, user: { id: claims.id, email: claims.email, role: claims.role } }, setCookies);
     },
 
@@ -167,6 +185,15 @@ export function createSessionHandlers(config: SessionConfig): SessionHandlers {
         refreshed = true;
         const outcome = await coordinator.refresh(refresh, address);
         if (outcome.ok) {
+          // The role is read from the backend's answer, so a demotion shows up here.
+          const renewed = readClaims(outcome.pair.token);
+          if (!renewed || !roleAllowed(renewed.role)) {
+            await logoutAtGateway(gatewayUrl, outcome.pair.refreshToken, address);
+            access = undefined;
+            setCookies = clearedCookies(secure);
+            return false;
+          }
+
           access = outcome.pair.token;
           setCookies = sessionCookies(outcome.pair, secure);
           return true;

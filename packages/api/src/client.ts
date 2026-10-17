@@ -1,6 +1,6 @@
 import axios from "axios";
 
-type Hooks = { getToken?: () => string | null; onUnauthorized: () => void };
+type Hooks = { onUnauthorized: () => void };
 
 let hooks: Hooks | null = null;
 
@@ -16,25 +16,14 @@ export const sessionClient = axios.create({ baseURL: "/api" });
 
 /**
  * Wire the client to an app. Call it once at startup, before the first request. The package does
- * not know where the gateway is, where the token is kept or what to do when it is rejected; each
- * app says so here (the shop clears its session and cache on a 401).
+ * not know where the apps' API proxy is or what a 401 means; each app says so here (it forgets its
+ * session and clears its cache). There is no token to configure: it lives in HttpOnly cookies and
+ * the app's own server adds it on the way to the gateway.
  */
 export function configureApi(options: { baseURL: string } & Hooks) {
-  // getToken is for apps that keep a token in the page. An app whose session lives in HttpOnly
-  // cookies leaves it out: its proxy adds the token on the server.
   apiClient.defaults.baseURL = options.baseURL;
-  hooks = { getToken: options.getToken, onUnauthorized: options.onUnauthorized };
+  hooks = { onUnauthorized: options.onUnauthorized };
 }
-
-apiClient.interceptors.request.use((config) => {
-  if (!hooks) throw new Error("configureApi() must be called before the first API request.");
-
-  const token = hooks.getToken?.();
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
 
 apiClient.interceptors.response.use(
   (response) => response,
