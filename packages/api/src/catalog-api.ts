@@ -6,6 +6,8 @@ export type ProductDto = {
   description: string;
   price: number;
   category: string;
+  /** Where the picture is (the URL carries its version), or null when the product has none. */
+  imageUrl: string | null;
 };
 
 export type ProductListResult = {
@@ -45,4 +47,16 @@ export type CreateProductRequest = {
 export async function createProduct(request: CreateProductRequest): Promise<{ id: string }> {
   const { data } = await apiClient.post<{ id: string }>("/products", request);
   return data;
+}
+
+/** Admin only. The body is the picture itself (JPEG, PNG or WebP, at most 2 MB), not a form. */
+export async function uploadProductImage(id: string, file: Blob): Promise<{ imageUrl: string }> {
+  const { data } = await apiClient.put<{ imageUrl: string }>(`/products/${id}/image`, file, {
+    headers: { "Content-Type": file.type },
+  });
+  return data;
+}
+
+export async function deleteProductImage(id: string): Promise<void> {
+  await apiClient.delete(`/products/${id}/image`);
 }

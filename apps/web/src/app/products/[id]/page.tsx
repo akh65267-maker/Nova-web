@@ -10,7 +10,7 @@ import { Skeleton } from "@taskmanager/ui/components/skeleton";
 import { useProduct } from "@taskmanager/api/use-products";
 import { useInventory } from "@taskmanager/api/use-inventory";
 import { MAX_PER_ORDER, useCartStore } from "@/store/cart-store";
-import { ProductIllustration } from "@/features/catalog/product-illustration";
+import { ProductPicture } from "@/features/catalog/product-picture";
 import { cn } from "@/lib/utils";
 
 export default function ProductDetailPage(props: PageProps<"/products/[id]">) {
@@ -77,8 +77,8 @@ export default function ProductDetailPage(props: PageProps<"/products/[id]">) {
       </Link>
 
       <div className="grid grid-cols-1 gap-8 md:grid-cols-2 md:gap-12">
-        <div className="aspect-square overflow-hidden rounded-xl ring-1 ring-foreground/10">
-          <ProductIllustration category={product.category} className="h-full w-full" />
+        <div className="relative aspect-square overflow-hidden rounded-xl ring-1 ring-foreground/10">
+          <ProductPicture product={product} sizes="(min-width: 768px) 50vw, 100vw" />
         </div>
 
         <div className="flex flex-col gap-4">

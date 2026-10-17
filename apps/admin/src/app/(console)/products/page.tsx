@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
+import Image from "next/image";
 import { toast } from "sonner";
 import { AxiosError } from "axios";
 import { Button } from "@taskmanager/ui/components/button";
@@ -23,7 +24,8 @@ import {
 } from "@taskmanager/ui/components/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@taskmanager/ui/components/table";
 import { Skeleton } from "@taskmanager/ui/components/skeleton";
-import { useProducts, useCreateProduct } from "@taskmanager/api/use-products";
+import { useProducts, useCreateProduct, useDeleteProductImage, useUploadProductImage } from "@taskmanager/api/use-products";
+import type { ProductDto } from "@taskmanager/api/catalog-api";
 import { useCreateInventory, useInventoryList, useRestockInventory } from "@taskmanager/api/use-inventory";
 import { CATEGORIES } from "@taskmanager/api/categories";
 import { ErrorMessage } from "@taskmanager/ui/components/error-message";
@@ -205,6 +207,56 @@ function RestockControl({ productId }: { productId: string }) {
   );
 }
 
+const PICTURE_TYPES = ["image/jpeg", "image/png", "image/webp"];
+const PICTURE_MAX_BYTES = 2 * 1024 * 1024;
+
+function PictureControl({ product }: { product: ProductDto }) {
+  const upload = useUploadProductImage();
+  const remove = useDeleteProductImage();
+  const input = useRef<HTMLInputElement>(null);
+
+  function handleChoose(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+
+    // The server checks the bytes themselves; this only saves a round trip for the obvious mistakes.
+    if (!PICTURE_TYPES.includes(file.type)) return void toast.error("Choose a JPEG, PNG or WebP picture.");
+    if (file.size > PICTURE_MAX_BYTES) return void toast.error("A picture can be at most 2 MB.");
+
+    upload.mutate(
+      { id: product.id, file },
+      { onSuccess: () => toast.success("Picture updated"), onError: (error) => toast.error(getApiErrorMessage(error)) },
+    );
+  }
+
+  return (
+    <div className="flex items-center gap-3">
+      {product.imageUrl ? (
+        <Image src={product.imageUrl} alt={`Picture of ${product.name}`} width={40} height={40} unoptimized className="size-10 rounded-md object-cover ring-1 ring-foreground/10" />
+      ) : (
+        <span className="flex size-10 items-center justify-center rounded-md bg-muted text-xs text-muted-foreground">None</span>
+      )}
+      <input ref={input} type="file" accept={PICTURE_TYPES.join(",")} className="hidden" aria-label={`Choose a picture for ${product.name}`} onChange={handleChoose} />
+      <Button size="sm" variant="outline" disabled={upload.isPending || remove.isPending} onClick={() => input.current?.click()}>
+        {upload.isPending ? "Uploading..." : product.imageUrl ? "Replace" : "Upload"}
+      </Button>
+      {product.imageUrl && (
+        <Button
+          size="sm"
+          variant="ghost"
+          disabled={upload.isPending || remove.isPending}
+          onClick={() =>
+            remove.mutate(product.id, { onSuccess: () => toast.success("Picture removed"), onError: (error) => toast.error(getApiErrorMessage(error)) })
+          }
+        >
+          Remove
+        </Button>
+      )}
+    </div>
+  );
+}
+
 export default function AdminProductsPage() {
   const {
     data: productsResult,
@@ -237,6 +289,7 @@ export default function AdminProductsPage() {
           <TableHeader>
             <TableRow>
               <TableHead>Name</TableHead>
+              <TableHead>Picture</TableHead>
               <TableHead>Category</TableHead>
               <TableHead>Price</TableHead>
               <TableHead>Stock</TableHead>
@@ -246,6 +299,9 @@ export default function AdminProductsPage() {
             {productsResult?.items.map((product) => (
               <TableRow key={product.id}>
                 <TableCell className="font-medium">{product.name}</TableCell>
+                <TableCell>
+                  <PictureControl product={product} />
+                </TableCell>
                 <TableCell>{product.category}</TableCell>
                 <TableCell>${product.price.toFixed(2)}</TableCell>
                 <TableCell>

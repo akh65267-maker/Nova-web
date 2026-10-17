@@ -8,7 +8,7 @@ import { Button } from "@taskmanager/ui/components/button";
 import { useCartStore } from "@/store/cart-store";
 import { toast } from "sonner";
 import type { ProductDto } from "@taskmanager/api/catalog-api";
-import { ProductIllustration } from "./product-illustration";
+import { ProductPicture } from "./product-picture";
 
 export function ProductCard({ product }: { product: ProductDto }) {
   const addItem = useCartStore((state) => state.addItem);
@@ -24,10 +24,12 @@ export function ProductCard({ product }: { product: ProductDto }) {
   return (
     <Card className="group flex h-full flex-col gap-0 overflow-hidden py-0 transition duration-200 hover:-translate-y-0.5 hover:shadow-lg motion-reduce:transition-none motion-reduce:hover:translate-y-0">
       <Link href={`/products/${product.id}`} tabIndex={-1} aria-hidden>
-        <div className="aspect-square overflow-hidden">
-          <ProductIllustration
-            category={product.category}
-            className="h-full w-full transition-transform duration-300 group-hover:scale-105"
+        <div className="relative aspect-square overflow-hidden">
+          <ProductPicture
+            product={product}
+            alt=""
+            sizes="(min-width: 1024px) 25vw, (min-width: 640px) 33vw, 50vw"
+            className="transition-transform duration-300 group-hover:scale-105"
           />
         </div>
       </Link>
