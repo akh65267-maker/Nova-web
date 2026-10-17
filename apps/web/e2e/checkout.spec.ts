@@ -129,10 +129,8 @@ test("signing out empties the cart", async ({ page, request }) => {
 
   await page.getByRole("button", { name: "Account" }).click();
   await page.getByRole("menuitem", { name: "Sign out" }).click();
-  await page.waitForFunction(() => {
-    const stored = localStorage.getItem("tm-auth");
-    return !stored || !JSON.parse(stored).state?.token;
-  });
+  // The session is in cookies now: signing out must clear them.
+  await expect.poll(async () => (await page.context().cookies()).filter((c) => c.name.startsWith("tm_shop_")).length).toBe(0);
 
   await page.getByRole("button", { name: "Cart" }).click();
   await expect(page.getByText("Your cart is empty")).toBeVisible();
@@ -143,9 +141,10 @@ test("signing out empties the cart", async ({ page, request }) => {
   await expect(page.getByText("Your cart is empty")).toBeVisible();
 });
 
-test("a token the gateway rejects signs the user out but keeps the cart", async ({ page, request }) => {
+test("a session the gateway rejects signs the user out but keeps the cart", async ({ page, request }) => {
   // The other half of "signing out empties the cart": when the session simply ends (the gateway
-  // answers 401), the person did not choose to leave, so their cart must survive.
+  // answers 401 and there is no refresh token to renew it), the person did not choose to leave,
+  // so their cart must survive.
   const product = await findPurchasableProduct(request);
 
   // Well-formed and not expired, so the app believes it is signed in, but not signed by us.
@@ -154,24 +153,21 @@ test("a token the gateway rejects signs the user out but keeps the cart", async 
   ).toString("base64url");
   const rejectedToken = `e30.${payload}.not-a-real-signature`;
 
-  await page.addInitScript(
-    ([token, item]) => {
-      // Seed once: the redirect to /login loads a new page and would otherwise seed it again.
-      if (localStorage.getItem("seeded")) return;
-      localStorage.setItem("seeded", "1");
-      localStorage.setItem("tm-auth", JSON.stringify({ state: { token, expiresAtUtc: new Date(Date.now() + 3600e3).toISOString() }, version: 0 }));
-      localStorage.setItem("tm-cart", JSON.stringify({ state: { items: [item] }, version: 0 }));
-    },
-    [rejectedToken, { productId: product.id, name: product.name, price: product.price, quantity: 1 }] as const,
-  );
+  await page.context().addCookies([
+    { name: "tm_shop_at", value: rejectedToken, domain: "localhost", path: "/api", httpOnly: true, sameSite: "Lax" },
+  ]);
+  await page.addInitScript((item) => {
+    // Seed once: the redirect to /login loads a new page and would otherwise seed it again.
+    if (localStorage.getItem("seeded")) return;
+    localStorage.setItem("seeded", "1");
+    localStorage.setItem("tm-cart", JSON.stringify({ state: { items: [item] }, version: 0 }));
+  }, { productId: product.id, name: product.name, price: product.price, quantity: 1 });
 
   await page.goto("/orders");
   await expect(page).toHaveURL(/\/login/);
 
-  const stored = await page.evaluate(() => ({
-    token: JSON.parse(localStorage.getItem("tm-auth") ?? "{}").state?.token ?? null,
-    cartLines: JSON.parse(localStorage.getItem("tm-cart") ?? "{}").state?.items?.length ?? 0,
-  }));
-  expect(stored.token, "the rejected session is gone").toBeNull();
-  expect(stored.cartLines, "the cart is still there").toBe(1);
+  const cartLines = await page.evaluate(() => JSON.parse(localStorage.getItem("tm-cart") ?? "{}").state?.items?.length ?? 0);
+  const sessionCookies = (await page.context().cookies()).filter((c) => c.name.startsWith("tm_shop_"));
+  expect(sessionCookies, "the rejected session is gone").toHaveLength(0);
+  expect(cartLines, "the cart is still there").toBe(1);
 });

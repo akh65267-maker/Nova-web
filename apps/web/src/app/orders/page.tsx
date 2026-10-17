@@ -10,11 +10,11 @@ import { ErrorState } from "@taskmanager/ui/components/error-state";
 import { getApiErrorMessage } from "@taskmanager/api/errors";
 import { Skeleton } from "@taskmanager/ui/components/skeleton";
 import { useOrders } from "@taskmanager/api/use-orders";
-import { useRequireAuth } from "@taskmanager/auth/use-require-auth";
+import { useRequireSession } from "@taskmanager/auth/use-require-session";
 import { ORDER_STATUS } from "@/features/orders/status";
 
 export default function OrdersPage() {
-  const { isReady } = useRequireAuth("/login?redirect=/orders");
+  const { isReady } = useRequireSession("/login?redirect=/orders");
   const { data: orders, isLoading, isError, error, refetch } = useOrders();
 
   if (!isReady) {

@@ -17,8 +17,8 @@ import {
   DropdownMenuTrigger,
 } from "@taskmanager/ui/components/dropdown-menu";
 import { useCartCount, useCartStore } from "@/store/cart-store";
-import { useAuthStore } from "@taskmanager/auth/auth-store";
-import { useCurrentUser } from "@taskmanager/auth/use-auth";
+import { useSessionStore } from "@taskmanager/auth/session-store";
+import { useSessionCurrentUser } from "@taskmanager/auth/use-session";
 import { useLogout } from "@/features/auth/use-logout";
 
 function ThemeToggle() {
@@ -37,8 +37,8 @@ function ThemeToggle() {
 }
 
 function AccountMenu() {
-  const isAuthenticated = useAuthStore((state) => state.isAuthenticated());
-  const { data: user } = useCurrentUser();
+  const isAuthenticated = useSessionStore((state) => state.isAuthenticated());
+  const { data: user } = useSessionCurrentUser();
   const logout = useLogout();
 
   if (!isAuthenticated) {

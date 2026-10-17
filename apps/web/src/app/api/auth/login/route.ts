@@ -1,0 +1,5 @@
+import { sessionHandlers } from "@/lib/session-server";
+
+export const dynamic = "force-dynamic";
+
+export const POST = sessionHandlers.login;

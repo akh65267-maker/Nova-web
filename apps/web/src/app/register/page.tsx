@@ -7,14 +7,15 @@ import { Button } from "@taskmanager/ui/components/button";
 import { Input } from "@taskmanager/ui/components/input";
 import { Label } from "@taskmanager/ui/components/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@taskmanager/ui/components/card";
-import { useLogin, useRegister } from "@taskmanager/auth/use-auth";
+import { useRegister } from "@taskmanager/auth/use-auth";
+import { useSessionLogin } from "@taskmanager/auth/use-session";
 import { ErrorMessage } from "@taskmanager/ui/components/error-message";
 import { getApiErrorMessage } from "@taskmanager/api/errors";
 
 export default function RegisterPage() {
   const router = useRouter();
   const registerMutation = useRegister();
-  const loginMutation = useLogin();
+  const loginMutation = useSessionLogin();
   const [email, setEmail] = useState("");
   const [displayName, setDisplayName] = useState("");
   const [password, setPassword] = useState("");
