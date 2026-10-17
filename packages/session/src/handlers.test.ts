@@ -45,9 +45,10 @@ before(async () => {
       };
 
       if (req.url === "/users/login") {
-        const { password } = JSON.parse(body);
+        const { email, password } = JSON.parse(body);
         if (password !== "right") return json(401, { title: "Authentication failed." });
-        const access = accessToken("login");
+        const role = String(email).startsWith("admin") ? "Admin" : "Customer";
+        const access = accessToken("login", 900, role);
         validAccess.add(access);
         refreshTokens.set("login-refresh", { access: accessToken("after-login-refresh"), next: "login-refresh-2" });
         return json(200, pairResponse(access, "login-refresh"));
@@ -404,4 +405,74 @@ test("handlers made for the same app share one refresh, even when created separa
   assert.equal(a.status, 200);
   assert.equal(b.status, 200);
   assert.equal(received.filter((r) => r.url === "/users/refresh").length, 1);
+});
+
+// ── an app that only lets one role in (the admin app) ────────────────────────────────────────
+
+const adminHandlers = () => createSessionHandlers({ app: "admin", gatewayUrl, isolated: true, requiredRole: "Admin" });
+const adminPost = (path: string, body: unknown, headers: Record<string, string> = {}) =>
+  new Request(`http://localhost:3200${path}`, {
+    method: "POST",
+    headers: { "content-type": "application/json", origin: "http://localhost:3200", ...headers },
+    body: JSON.stringify(body),
+  });
+const adminGet = (path: string, cookies: Record<string, string> = {}) =>
+  new Request(`http://localhost:3200${path}`, { headers: { cookie: cookieHeader(cookies) } });
+
+test("an administrator can sign in to the admin app", async () => {
+  const response = await adminHandlers().login(adminPost("/api/auth/login", { email: "admin@example.com", password: "right" }));
+
+  assert.equal(response.status, 200);
+  assert.equal((await response.json()).user.role, "Admin");
+  assert.ok(cookieValue(response, "tm_admin_at"));
+  assert.equal(cookieValue(response, "tm_admin_rt"), "login-refresh");
+});
+
+test("a customer is refused by the admin app: no cookie is set, and the sign-in it just made is revoked", async () => {
+  const response = await adminHandlers().login(adminPost("/api/auth/login", { email: "customer@example.com", password: "right" }));
+
+  assert.equal(response.status, 403);
+  assert.equal(cookiesOf(response).length, 0);
+  assert.doesNotMatch(await response.text(), /login-refresh/);
+
+  // The gateway did issue a refresh token for that customer; it must not be left alive.
+  const logout = received.find((r) => r.url === "/users/logout");
+  assert.ok(logout, "the refresh token that was issued is revoked");
+  assert.equal(JSON.parse(logout.body).refreshToken, "login-refresh");
+});
+
+test("an app with no required role lets a customer in, as the shop does", async () => {
+  const response = await handlers().login(post("/api/auth/login", { email: "customer@example.com", password: "right" }));
+
+  assert.equal(response.status, 200);
+});
+
+test("a session whose token has the wrong role is not a session in the admin app", async () => {
+  const response = await adminHandlers().session(adminGet("/api/session", { tm_admin_at: accessToken("customer", 900, "Customer") }));
+
+  assert.deepEqual(await response.json(), { authenticated: false });
+});
+
+test("an administrator's session is recognised in the admin app", async () => {
+  const response = await adminHandlers().session(adminGet("/api/session", { tm_admin_at: accessToken("boss", 900, "Admin") }));
+
+  assert.deepEqual((await response.json()).user.role, "Admin");
+});
+
+test("an administrator who has since been demoted loses access at the next renewal", async () => {
+  // The refresh succeeds, but the new access token says Customer: the backend changed the role.
+  refreshTokens.set("r1", { access: accessToken("demoted", 900, "Customer"), next: "r2" });
+
+  const response = await adminHandlers().proxy(
+    adminGet("/api/proxy/orders/admin/summary", { tm_admin_rt: "r1" }),
+  );
+
+  assert.equal(response.status, 401);
+  const cookies = cookiesOf(response);
+  assert.ok(cookies.some((c) => c.startsWith("tm_admin_at=;") && /Max-Age=0/.test(c)));
+  assert.ok(cookies.some((c) => c.startsWith("tm_admin_rt=;") && /Max-Age=0/.test(c)));
+  // The call may still be forwarded (public endpoints keep working), but with no token at all: the
+  // customer-level token is never used, and the new refresh token was revoked.
+  assert.ok(received.filter((r) => r.url.startsWith("/orders")).every((r) => r.headers.authorization === undefined));
+  assert.equal(JSON.parse(received.find((r) => r.url === "/users/logout")!.body).refreshToken, "r2");
 });

@@ -71,7 +71,7 @@ Dynamic route params are typed with the Next-generated `PageProps<"/route">` /
 
 ## Authentication
 
-**The shop keeps its session in cookies the page cannot read.** The admin app does not yet (below).
+**Both apps keep their session in cookies the page cannot read**, each behind its own server routes (the shop's cookies are `tm_shop_*`, the admin's `tm_admin_*`).
 
 ```text
 LoginPage → useSessionLogin() → POST /api/auth/login  (the shop's own server route)
@@ -90,20 +90,23 @@ LoginPage → useSessionLogin() → POST /api/auth/login  (the shop's own server
 - **The caller's address** is passed on as `X-Forwarded-For` (the last entry of the incoming header, which only a trusted proxy in front of the app sets), so the backend's per-caller login limits see people and not "the shop's server". Locally there is no such proxy, so every shop sign-in looks like one caller.
 - **What it does not do:** a stolen *access* token works until it expires, even after sign-out (the backend has no revocation list); script running on the page can still make requests as the user while it is open, it just cannot copy the token; the refresh coordinator is per server process.
 
-**The admin app still uses the older flow**: a token in `localStorage` (`tm-auth`), sent by an Axios interceptor, no refresh and no sign-out call. `packages/auth` keeps both (`auth-store`, `use-auth`, `use-require-auth` for the admin; `session-store`, `use-session`, `use-require-session` for the shop) until the admin moves over. Until then the backend's access-token life stays at 60 minutes (`Jwt:AccessTokenMinutes`), because the admin cannot renew.
+**The admin app works the same way** (`apps/admin/src/lib/session-server.ts`, the same four routes under `src/app/api`) with three differences: its cookies are `tm_admin_at` and `tm_admin_rt`; it is created with `requiredRole: "Admin"`, so **only an administrator can ever have a session there** (a customer whose password is right is refused with 403 *by the server*, the sign-in the gateway had just issued for them is revoked, and no cookie is set; and a session whose renewed token no longer says Admin is ended, so a demoted administrator loses access at the next renewal); and its sign-in page shows "That account is not an administrator." for that 403. The two sessions are independent: signing in to one does not sign in to the other, and neither disturbs the other (a test signs in to both in one browser). The old token-in-`localStorage` code is gone from `packages/auth` and `packages/api`. The backend's access-token life (`Jwt:AccessTokenMinutes`) can now be shortened to 15 minutes, since both apps renew on their own: that is a backend setting, not yet changed.
 
 ## Authorization / Roles
 
-- In the shop the role comes from `/api/session` (the server reads it from the access token's role claim). In the admin app it is read **client-side from the JWT** by `packages/auth/src/jwt.ts`, from the claim
-  `http://schemas.microsoft.com/ws/2008/06/identity/claims/role`. `isAdmin()` is true when that
-  claim equals `"Admin"` and the session is unexpired. The token is decoded with `atob` — the
-  signature is never verified in the browser.
-- `useRequireAuth(redirectTo, { requireAdmin, forbiddenRedirectTo })` is the single guard hook.
-  It returns `{ isReady }`; pages render `null` until ready. (The admin app's console sends non-admins
-  are redirected to `/`.
-- **This is UI convenience, not a security boundary.** Nothing stops a client from rendering
-  admin UI or issuing admin requests; enforcement is the backend's (`Admin` policy on the
-  catalog/inventory write endpoints — see the backend `docs/authentication.md`).
+- The role comes from `/api/session`: the server reads it from the access token's role claim
+  (`http://schemas.microsoft.com/ws/2008/06/identity/claims/role`) and answers it with the user.
+  `useSessionStore.isAdmin()` is true when that role is `"Admin"`. The server does not verify the
+  token's signature when it reads this (it reads a cookie it set itself; the services verify the
+  token on every call), so what it can affect is what the page shows its own owner.
+- The admin app additionally has `requiredRole: "Admin"` on its server: an account that is not an
+  administrator cannot sign in there (403), and a session that stops being `Admin` at renewal is ended.
+- `useRequireSession(redirectTo, { requireAdmin, forbiddenRedirectTo })` is the single guard hook. It
+  returns `{ isReady }`; pages render `null` until ready. It waits for the first answer from
+  `/api/session` before redirecting anyone.
+- **The page-level check is UI convenience, not a security boundary.** Enforcement is the backend's
+  (`Admin` policy on the catalog, inventory and order-analytics endpoints, and `requiredRole` on the
+  admin app's server; see the backend `docs/authentication.md`).
 
 ## API Client
 
@@ -112,7 +115,7 @@ LoginPage → useSessionLogin() → POST /api/auth/login  (the shop's own server
 | Concern | Implementation |
 |---|---|
 | Base URL | Given to `configureApi` by the app. The shop: `"/api/proxy"` (its own server routes, which forward to the gateway). The admin: `process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000"` |
-| Auth header | The admin: request interceptor, Bearer from its `getToken`. The shop passes no `getToken`: its proxy adds the token on the server |
+| Auth header | None in the browser. Both apps' `/api/proxy` routes add the token on the server from the session cookie |
 | 401 | Response interceptor → the app's `onUnauthorized` (the shop: forget the session and clear the query cache, the cart is kept; the admin: `logout()` and clear the cache), error re-thrown |
 | Other statuses | Not intercepted; handled per-call by React Query |
 | Error messages | `getApiErrorMessage(error, fallback)` reads ProblemDetails `detail` then `title` |
@@ -154,7 +157,7 @@ the current behavior.
 
 | Store | Persisted (`localStorage`) | Responsibility |
 |---|---|---|
-| `auth-store` (`tm-auth`) | `token`, `expiresAtUtc` | Session token, expiry check, `isAdmin()` derived from the JWT, `hasHydrated` flag |
+| `session-store` (not persisted) | nothing | Who is signed in, as the server's `/api/session` answered (`loading` / `authenticated` / `anonymous`, and the user's id, email and role); `isAdmin()` is derived from the role. No token and no storage |
 | `cart-store` (`tm-cart`) | `items` | Cart lines (`productId`, `name`, `price`, `quantity`), drawer `isOpen` (not persisted). Cleared by an explicit sign-out (`useLogout`), not when a token merely expires (`api-client.ts`) |
 
 Both use `skipHydration: true` and are rehydrated by `StoreHydrator`.
@@ -191,7 +194,7 @@ own `unitPrice`.
 
 The admin is its own Next.js app, served on **port 3200** (`npm run dev:admin`), beside the shop on 3100. It reuses `@taskmanager/ui`, `@taskmanager/api` and `@taskmanager/auth`; nothing from the shop's own code.
 
-- **Its own session.** `localStorage` is per origin, so signing in to the shop does not sign in to the admin, and the reverse. That is deliberate. The admin has its own sign-in page, which signs the person straight back out and says so if the account is not an `Admin` (the check reads the role from the token, as everywhere; the backend enforces it).
+- **Its own session.** Its cookies (`tm_admin_at`, `tm_admin_rt`) have names of their own, because cookies ignore ports and on localhost the shop and the admin would otherwise share them: signing in to the shop does not sign in to the admin, and the reverse. That is deliberate. The admin has its own sign-in page; the server refuses an account that is not an `Admin` (403, nothing stored), so a customer never holds a session in the console, and the page says so.
 - **Routes:** `/login`; and, behind one guard in `app/(console)/layout.tsx`, `/` (redirects to `/dashboard`), `/dashboard`, `/orders`, `/orders/[id]` and `/products`. The dashboard shows four KPI cards (orders, revenue, average order value, cancellation rate, each against the previous period of equal length) from the backend's `GET /orders/admin/summary`, for 7, 30 or 90 whole UTC days; revenue is confirmed orders only, with no tax or shipping. Below the cards: orders and revenue per UTC day (`components/bar-chart.tsx`, hand-drawn SVG, no charting library), cancellations by reason, a **Stuck in Pending** list (orders waiting over two minutes, refreshed every 15 s) and **Low stock** (ten units or fewer, from the inventory list joined to product names). Each panel loads and fails on its own, with its own empty state. **Orders** lists every customer's orders (status and 7/30/90-day filters, 25 per page, the previous page stays visible while the next loads); an order opens to its lines (product names from the catalog, the id if unknown), when it was created and resolved ("Not recorded" for orders from before that was kept), the cancellation reason, and the customer's name and email from `GET /users/{id}` (the user id alone if that lookup fails). An unknown id says "Order not found". The guard is `useRequireAuth` with `requireAdmin`; a signed-in non-admin goes to `/login?forbidden=1`, where that session is dropped. The login page only follows a `redirect` that is a path inside the app.
 - **The shell:** a slim header (brand, "Back to shop" to `NEXT_PUBLIC_SHOP_URL`, "Sign out") and a sidebar, a tab row on mobile, driven by the `NAV` array in the layout. To add a section, add a page under `app/(console)/` and one `NAV` entry.
 - **Products** (unchanged from when it lived in the shop): lists `useProducts({ pageSize: 100 })` joined against `useInventoryList()` via a `Map<productId, quantityAvailable>`. **New product** is a two-step client-orchestrated flow, `POST /products` then `POST /inventory` with the initial stock; if the second call fails the product exists with no inventory record, and the dialog says so (no rollback). **Restock** calls `POST /inventory/{id}/restock`; on a 404 it falls back to `POST /inventory`.
@@ -216,7 +219,7 @@ Beside `packages/ui` (above), three more packages exist so that a second app doe
 | Package | Contains | Imported as |
 |---|---|---|
 | `@taskmanager/api` | the Axios client and `configureApi`; `getApiErrorMessage`; one `*-api.ts` per backend area (auth, catalog, inventory, orders) with its DTO types; the React Query hooks (`use-products`, `use-inventory`, `use-orders`); the product `categories` | `@taskmanager/api/client`, `.../errors`, `.../catalog-api`, `.../use-products`, ... |
-| `@taskmanager/auth` | the persisted auth store (`tm-auth`), the JWT helper, `useLogin`/`useRegister`/`useCurrentUser`/`useLogout`, and `useRequireAuth` | `@taskmanager/auth/auth-store`, `.../use-auth`, `.../use-require-auth`, `.../jwt` |
+| `@taskmanager/auth` | the session store, `useSessionLogin`/`useSessionLogout`/`useSessionCurrentUser`/`loadSession`, `useRequireSession`, and `useRegister` | `@taskmanager/auth/session-store`, `.../use-session`, `.../use-require-session`, `.../use-auth` |
 | `@taskmanager/config` | the shared ESLint rules (`base`, and `library()` for a package) and `tsconfig.base.json` | `@taskmanager/config/eslint`, `.../tsconfig.base.json` |
 
 How they fit together, and the two places where an app still has to supply something:

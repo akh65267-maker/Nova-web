@@ -57,7 +57,7 @@ test("an anonymous visitor is sent to the sign-in page", async ({ page }) => {
   await expect(page.getByText("Admin sign in")).toBeVisible();
 });
 
-test("a customer account is refused, and is not left signed in", async ({ page, request }) => {
+test("a customer account is refused, and is not left signed in", async ({ page, context, request }) => {
   const runId = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
   const email = `e2e-admin-check+${runId}@example.com`;
   const password = `E2e-${runId}`;
@@ -74,9 +74,8 @@ test("a customer account is refused, and is not left signed in", async ({ page, 
   await expect(page.getByText("That account is not an administrator.")).toBeVisible();
   await expect(page).toHaveURL(/\/login/);
 
-  // Nothing of that session is kept, and the console stays closed.
-  const token = await page.evaluate(() => JSON.parse(localStorage.getItem("tm-auth") ?? "{}").state?.token ?? null);
-  expect(token).toBeNull();
+  // Nothing of that session is kept: the server never set a cookie, and the console stays closed.
+  expect((await context.cookies()).filter((c) => c.name.startsWith("tm_admin_"))).toHaveLength(0);
   await page.goto("/products");
   await expect(page).toHaveURL(/\/login/);
 });

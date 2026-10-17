@@ -8,9 +8,8 @@ import { ErrorMessage } from "@taskmanager/ui/components/error-message";
 import { Input } from "@taskmanager/ui/components/input";
 import { Label } from "@taskmanager/ui/components/label";
 import { getApiErrorMessage } from "@taskmanager/api/errors";
-import { useAuthStore } from "@taskmanager/auth/auth-store";
-import { getRole } from "@taskmanager/auth/jwt";
-import { useLogin } from "@taskmanager/auth/use-auth";
+import { isAxiosError } from "axios";
+import { useSessionLogin, useSessionLogout } from "@taskmanager/auth/use-session";
 
 const NOT_ADMIN = "That account is not an administrator.";
 
@@ -32,35 +31,29 @@ function LoginPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirectTo = safeRedirect(searchParams.get("redirect"));
-  const loginMutation = useLogin();
-  const logout = useAuthStore((state) => state.logout);
+  const loginMutation = useSessionLogin();
+  const logout = useSessionLogout();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [notAdmin, setNotAdmin] = useState(searchParams.get("forbidden") === "1");
 
   // Arriving here because a signed-in non-admin was turned away: drop that session, so the next
-  // attempt starts clean and the shop's account does not stay signed in to the console.
+  // attempt starts clean. (The server no longer lets a non-admin have a session in this app, so
+  // this is a safety net, not the usual way to meet that case.)
   useEffect(() => {
-    if (searchParams.get("forbidden") === "1") logout();
-  }, [searchParams, logout]);
+    if (searchParams.get("forbidden") === "1") void logout();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- logout is recreated on every render; run once per arrival
+  }, [searchParams]);
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setNotAdmin(false);
-    loginMutation.mutate(
-      { email, password },
-      {
-        onSuccess: (result) => {
-          if (getRole(result.token) !== "Admin") {
-            logout();
-            setNotAdmin(true);
-            return;
-          }
-          router.push(redirectTo);
-        },
-      },
-    );
+    loginMutation.mutate({ email, password }, { onSuccess: () => router.push(redirectTo) });
   }
+
+  // The server refuses an account that is not an administrator with a 403, after the password was
+  // right: that is its own message, not "invalid email or password".
+  const refusedAsNotAdmin = isAxiosError(loginMutation.error) && loginMutation.error.response?.status === 403;
 
   return (
     <main className="flex flex-1 items-center justify-center px-4 py-16">
@@ -80,8 +73,8 @@ function LoginPageContent() {
               <Input id="password" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="current-password" />
             </div>
 
-            {notAdmin && <ErrorMessage>{NOT_ADMIN}</ErrorMessage>}
-            {loginMutation.isError && (
+            {(notAdmin || refusedAsNotAdmin) && <ErrorMessage>{NOT_ADMIN}</ErrorMessage>}
+            {loginMutation.isError && !refusedAsNotAdmin && (
               <ErrorMessage>{getApiErrorMessage(loginMutation.error, "Invalid email or password.")}</ErrorMessage>
             )}
 

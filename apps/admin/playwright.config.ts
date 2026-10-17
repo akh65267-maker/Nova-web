@@ -23,10 +23,21 @@ export default defineConfig({
     screenshot: "only-on-failure",
   },
   projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
-  webServer: {
-    command: "npm run dev",
-    url: baseURL,
-    reuseExistingServer: true,
-    timeout: 120_000,
-  },
+  webServer: [
+    {
+      command: "npm run dev",
+      url: baseURL,
+      reuseExistingServer: true,
+      timeout: 120_000,
+    },
+    // The shop as well: one test signs in to both apps in one browser, to prove their sessions stay
+    // apart (cookies ignore ports, so on one host only the cookie names separate them).
+    {
+      command: "npm run dev",
+      cwd: "../..",
+      url: process.env.NEXT_PUBLIC_SHOP_URL ?? "http://localhost:3100",
+      reuseExistingServer: true,
+      timeout: 120_000,
+    },
+  ],
 });
