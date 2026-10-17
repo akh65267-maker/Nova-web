@@ -184,6 +184,7 @@ own `unitPrice`.
   (`MAX_PRICE`); values at the bounds are omitted from the request.
 - Categories are a hardcoded frontend constant (`packages/api/src/categories.ts`), not
   fetched from the backend.
+- **Pictures.** `ProductDto.imageUrl` is `null` or a same-origin path (`/products/{id}/image?v=…`). `ProductPicture` (shop) shows it with `next/image` (`unoptimized`: the file is served as uploaded, with its own caching) and falls back to `ProductIllustration` while there is none. The path is served by a route in each app (`app/products/[id]/image/route.ts`, built by `createProductImageHandler` in `packages/session/src/image.ts`), not the API proxy: the proxy marks everything `no-store` because it carries a person's own data, while a picture is public and its URL carries its version, so the route passes the backend's `Cache-Control`/`ETag` through (and answers 304). It sends no cookie or token, and only a well-formed product id and hex version reach the gateway's URL. The admin's products table uploads (`PUT`, the file itself as the body, JPEG/PNG/WebP up to 2 MB: checked in the browser only to save a round trip; the server checks the bytes) and removes pictures through the normal proxy, as the administrator.
 - Detail page combines `useProduct(id)` and `useInventory(id)`; add-to-cart is disabled while
   inventory loads or when `quantityAvailable === 0`.
 - Checkout: `POST /orders` with the cart lines → clear cart → `router.push(/orders/{id})`,
