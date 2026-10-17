@@ -1,0 +1,16 @@
+{
+  "name": "@taskmanager/session",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./*": "./src/*.ts"
+  },
+  "scripts": {
+    "lint": "eslint src",
+    "test": "node --test \"src/**/*.test.ts\""
+  },
+  "devDependencies": {
+    "@taskmanager/config": "*"
+  }
+}

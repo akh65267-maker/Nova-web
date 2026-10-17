@@ -5,16 +5,16 @@ import { useRouter } from "next/navigation";
 import { Button } from "@taskmanager/ui/components/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@taskmanager/ui/components/card";
 import { Skeleton } from "@taskmanager/ui/components/skeleton";
-import { useCurrentUser } from "@taskmanager/auth/use-auth";
+import { useSessionCurrentUser } from "@taskmanager/auth/use-session";
 import { useLogout } from "@/features/auth/use-logout";
-import { useRequireAuth } from "@taskmanager/auth/use-require-auth";
-import { useAuthStore } from "@taskmanager/auth/auth-store";
+import { useRequireSession } from "@taskmanager/auth/use-require-session";
+import { useSessionStore } from "@taskmanager/auth/session-store";
 
 export default function AccountPage() {
   const router = useRouter();
-  const { isReady } = useRequireAuth("/login");
-  const { data: user, isLoading } = useCurrentUser();
-  const isAdmin = useAuthStore((state) => state.isAdmin());
+  const { isReady } = useRequireSession("/login");
+  const { data: user, isLoading } = useSessionCurrentUser();
+  const isAdmin = useSessionStore((state) => state.isAdmin());
   const logout = useLogout();
 
   if (!isReady) {

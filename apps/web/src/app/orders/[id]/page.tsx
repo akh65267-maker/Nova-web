@@ -12,11 +12,11 @@ import { Skeleton } from "@taskmanager/ui/components/skeleton";
 import { ORDER_STATUS } from "@/features/orders/status";
 import { useOrder } from "@taskmanager/api/use-orders";
 import { cn } from "@/lib/utils";
-import { useRequireAuth } from "@taskmanager/auth/use-require-auth";
+import { useRequireSession } from "@taskmanager/auth/use-require-session";
 
 export default function OrderDetailPage(props: PageProps<"/orders/[id]">) {
   const { id } = use(props.params);
-  const { isReady } = useRequireAuth("/login");
+  const { isReady } = useRequireSession("/login");
   const { data: order, isLoading, isError, error, refetch } = useOrder(id);
 
   if (isReady && isError && !order) {

@@ -36,6 +36,11 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      # The session package (cookies, token refresh, the proxy to the gateway) has unit tests that
+      # run under Node itself against a stand-in gateway: no browser, no backend, a few seconds.
+      - name: Unit tests
+        run: npm run test:unit
+
       # No separate `tsc --noEmit` step: Next.js's PageProps/LayoutProps
       # global route types only exist after `next dev`/`next build`/
       # `next typegen` has generated next-env.d.ts's references, which

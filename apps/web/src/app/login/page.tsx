@@ -8,7 +8,7 @@ import { Button } from "@taskmanager/ui/components/button";
 import { Input } from "@taskmanager/ui/components/input";
 import { Label } from "@taskmanager/ui/components/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@taskmanager/ui/components/card";
-import { useLogin } from "@taskmanager/auth/use-auth";
+import { useSessionLogin } from "@taskmanager/auth/use-session";
 import { ErrorMessage } from "@taskmanager/ui/components/error-message";
 import { getApiErrorMessage } from "@taskmanager/api/errors";
 
@@ -24,7 +24,7 @@ function LoginPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirectTo = searchParams.get("redirect") ?? "/account";
-  const loginMutation = useLogin();
+  const loginMutation = useSessionLogin();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 

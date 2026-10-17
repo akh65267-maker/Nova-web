@@ -10,12 +10,12 @@ import { EmptyState } from "@taskmanager/ui/components/empty-state";
 import { Separator } from "@taskmanager/ui/components/separator";
 import { useCartStore, useCartSubtotal } from "@/store/cart-store";
 import { useCreateOrder } from "@taskmanager/api/use-orders";
-import { useRequireAuth } from "@taskmanager/auth/use-require-auth";
+import { useRequireSession } from "@taskmanager/auth/use-require-session";
 import { getApiErrorMessage } from "@taskmanager/api/errors";
 
 export default function CheckoutPage() {
   const router = useRouter();
-  const { isReady } = useRequireAuth("/login?redirect=/checkout");
+  const { isReady } = useRequireSession("/login?redirect=/checkout");
   const items = useCartStore((state) => state.items);
   const clearCart = useCartStore((state) => state.clear);
   const subtotal = useCartSubtotal();

@@ -27,7 +27,8 @@
     "zustand": "^5.0.15",
     "@taskmanager/ui": "*",
     "@taskmanager/api": "*",
-    "@taskmanager/auth": "*"
+    "@taskmanager/auth": "*",
+    "@taskmanager/session": "*"
   },
   "devDependencies": {
     "@playwright/test": "^1.63.0",

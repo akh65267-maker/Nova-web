@@ -9,6 +9,7 @@
     "dev": "npm run dev -w @taskmanager/web",
     "build": "npm run build --workspaces --if-present",
     "lint": "npm run lint --workspaces --if-present",
+    "test:unit": "npm run test --workspaces --if-present",
     "test:e2e": "npm run test:e2e -w @taskmanager/web && npm run test:e2e -w @taskmanager/admin",
     "prepare": "husky",
     "dev:admin": "npm run dev -w @taskmanager/admin"
@@ -22,6 +23,7 @@
     "packages/ui/**/*.{ts,tsx}": "npm exec --workspace=@taskmanager/ui -- eslint --fix",
     "packages/api/**/*.{ts,tsx}": "npm exec --workspace=@taskmanager/api -- eslint --fix",
     "packages/auth/**/*.{ts,tsx}": "npm exec --workspace=@taskmanager/auth -- eslint --fix",
+    "packages/session/**/*.ts": "npm exec --workspace=@taskmanager/session -- eslint --fix",
     "apps/admin/**/*.{ts,tsx}": "npm exec --workspace=@taskmanager/admin -- eslint --fix"
   }
 }

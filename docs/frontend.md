@@ -71,36 +71,30 @@ Dynamic route params are typed with the Next-generated `PageProps<"/route">` /
 
 ## Authentication
 
-Flow (all client-side):
+**The shop keeps its session in cookies the page cannot read.** The admin app does not yet (below).
 
 ```text
-LoginPage → useLogin() → POST /users/login → { token, expiresAtUtc }
-  → authStore.setSession(token, expiresAtUtc)   (persisted to localStorage "tm-auth")
-  → invalidate ["currentUser"] → router.push(redirect ?? "/account")
+LoginPage → useSessionLogin() → POST /api/auth/login  (the shop's own server route)
+  → server: POST gateway /users/login → { token, refreshToken, ... }
+  → server sets two HttpOnly cookies, answers { user: { id, email, role } }   (no token in the body)
+  → sessionStore.setUser(user) → router.push(redirect ?? "/account")
 ```
 
-- **Token storage:** `localStorage` key `tm-auth`, via Zustand `persist` (`partialize` keeps
-  only `token` + `expiresAtUtc`).
-- **Attachment:** an Axios request interceptor reads `useAuthStore.getState().token` and sets
-  `Authorization: Bearer <token>` on every request (no allowlist — the header is sent to all
-  endpoints, including public ones).
-- **Expiry:** `isAuthenticated()` compares `expiresAtUtc` to `Date.now()`. There is no timer;
-  expiry is only noticed on the next render or the next 401.
-- **401 handling:** a response interceptor calls `authStore.logout()`, clears the entire React
-  Query cache (`queryClient.clear()`), and re-rejects. It does **not** redirect; the user is
-  bounced to `/login` only if they are on a `useRequireAuth` page (its effect fires on the
-  state change).
-- **Logout:** `useLogout()` clears the auth store and the entire React Query cache. There is no
-  server-side logout/revocation call.
-- **Refresh persistence:** `persist` uses `skipHydration: true`; `StoreHydrator` (mounted in
-  the root layout) rehydrates both stores in an effect and then sets `hasHydrated`. Guards wait
-  on `hasHydrated` so a hard reload does not bounce a signed-in user to `/login`.
-- **Current user:** `useCurrentUser()` decodes `sub` from the JWT and queries `GET /users/{id}`,
-  enabled only when authenticated.
+- **Server layer:** `packages/session` (`@taskmanager/session`) holds the handlers; the shop mounts them as route files under `src/app/api` (`auth/login`, `auth/logout`, `session`, `proxy/[...path]`) through `src/lib/session-server.ts`. They are plain `Request`/`Response` code, tested with Node's own test runner against a stand-in gateway (`npm run test:unit`, 52 tests, no browser and no backend).
+- **Cookies:** `tm_shop_at` (access token, minutes) and `tm_shop_rt` (refresh token, weeks), both `HttpOnly`, `SameSite=Lax`, `Path=/api` (sent to the app's own API routes and nothing else), `Secure` whenever the request was over https. **Cookies ignore ports**, so on `localhost` the shop (3100), the admin (3200) and the gateway (8000) all see each other's cookies; each app therefore has its own names (`tm_<app>_at`/`_rt`) and the sessions stay apart.
+- **Every API call goes through `/api/proxy/*`.** The browser talks only to the shop's own origin; the server reads the cookie, adds `Authorization: Bearer` and forwards to the gateway (`GATEWAY_URL`, server-side). The gateway never sees the browser's cookies, and the app needs no CORS for its own calls.
+- **Staying signed in:** an access token with under 30 s left, or none, is renewed first with the refresh token, which the backend spends and replaces (rotation); a gateway 401 also triggers one refresh and one retry of the call. New cookies are set on that same response. Calls made together share one refresh (`RefreshCoordinator`, kept on `globalThis` so every route shares it): the backend treats a refresh token presented twice as a possible theft.
+- **Ending the session:** `useSessionLogout()` calls `/api/auth/logout`, which revokes the sign-in at the backend (the refresh token stops working at once) and clears both cookies; the cart is emptied too. A 401 the server cannot repair (no refresh token, or it was refused) clears the cookies and the page forgets the session, but keeps the cart. A refresh that fails because the gateway is down does **not** end the session.
+- **Forgery:** every change (anything but GET/HEAD/OPTIONS) must carry an `Origin` equal to the app's own, else 403, on top of `SameSite=Lax`. A request with no `Origin` is refused.
+- **Who is signed in:** `GET /api/session` answers `{ authenticated, user: { id, email, role } }` and never a token. `StoreHydrator` asks it once at startup; `useSessionStore` holds the answer (status `loading` / `authenticated` / `anonymous`) and nothing is written to storage. `useRequireSession` waits out `loading` before deciding to redirect.
+- **The caller's address** is passed on as `X-Forwarded-For` (the last entry of the incoming header, which only a trusted proxy in front of the app sets), so the backend's per-caller login limits see people and not "the shop's server". Locally there is no such proxy, so every shop sign-in looks like one caller.
+- **What it does not do:** a stolen *access* token works until it expires, even after sign-out (the backend has no revocation list); script running on the page can still make requests as the user while it is open, it just cannot copy the token; the refresh coordinator is per server process.
+
+**The admin app still uses the older flow**: a token in `localStorage` (`tm-auth`), sent by an Axios interceptor, no refresh and no sign-out call. `packages/auth` keeps both (`auth-store`, `use-auth`, `use-require-auth` for the admin; `session-store`, `use-session`, `use-require-session` for the shop) until the admin moves over. Until then the backend's access-token life stays at 60 minutes (`Jwt:AccessTokenMinutes`), because the admin cannot renew.
 
 ## Authorization / Roles
 
-- Role is read **client-side from the JWT** by `packages/auth/src/jwt.ts`, from the claim
+- In the shop the role comes from `/api/session` (the server reads it from the access token's role claim). In the admin app it is read **client-side from the JWT** by `packages/auth/src/jwt.ts`, from the claim
   `http://schemas.microsoft.com/ws/2008/06/identity/claims/role`. `isAdmin()` is true when that
   claim equals `"Admin"` and the session is unexpired. The token is decoded with `atob` — the
   signature is never verified in the browser.
@@ -117,9 +111,9 @@ LoginPage → useLogin() → POST /users/login → { token, expiresAtUtc }
 
 | Concern | Implementation |
 |---|---|
-| Base URL | Given to `configureApi` by the app: `process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000"` (the API gateway) |
-| Auth header | Request interceptor, Bearer from the app's `getToken` (the shop reads the auth store) |
-| 401 | Response interceptor → the app's `onUnauthorized` (the shop: `logout()` and clear the query cache; the cart is kept), error re-thrown |
+| Base URL | Given to `configureApi` by the app. The shop: `"/api/proxy"` (its own server routes, which forward to the gateway). The admin: `process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000"` |
+| Auth header | The admin: request interceptor, Bearer from its `getToken`. The shop passes no `getToken`: its proxy adds the token on the server |
+| 401 | Response interceptor → the app's `onUnauthorized` (the shop: forget the session and clear the query cache, the cart is kept; the admin: `logout()` and clear the cache), error re-thrown |
 | Other statuses | Not intercepted; handled per-call by React Query |
 | Error messages | `getApiErrorMessage(error, fallback)` reads ProblemDetails `detail` then `title` |
 
@@ -276,7 +270,8 @@ Unexpected render errors are caught by `app/error.tsx` (header and footer stay; 
 
 | Variable | Purpose | Default |
 |---|---|---|
-| `NEXT_PUBLIC_API_URL` | API gateway base URL | `http://localhost:8000` |
+| `GATEWAY_URL` | Where the shop's **server** reaches the gateway (not `NEXT_PUBLIC_`; the browser never calls the gateway) | `http://localhost:8000` |
+| `NEXT_PUBLIC_API_URL` | API gateway base URL for the admin app, and for the end-to-end tests that set things up directly | `http://localhost:8000` |
 
 `.env.local.example` documents it. `next.config.ts` is empty (defaults). Because the variable is
 `NEXT_PUBLIC_*`, it is inlined at build time — a container image must be rebuilt to point at a

@@ -1,14 +1,13 @@
 "use client";
 
 import { useEffect } from "react";
-import { useAuthStore } from "@taskmanager/auth/auth-store";
+import { loadSession } from "@taskmanager/auth/use-session";
 import { useCartStore } from "@/store/cart-store";
 
 export function StoreHydrator() {
   useEffect(() => {
-    Promise.resolve(useAuthStore.persist.rehydrate()).finally(() => {
-      useAuthStore.getState().setHasHydrated(true);
-    });
+    // The session is in cookies the page cannot read: ask the server who is signed in.
+    void loadSession();
     useCartStore.persist.rehydrate();
   }, []);
 
