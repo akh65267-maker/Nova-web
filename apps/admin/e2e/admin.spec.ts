@@ -15,12 +15,16 @@ async function placeConfirmedOrder(request: APIRequestContext): Promise<string> 
   const { items } = (await (await request.get(`${apiURL}/products?pageSize=100`)).json()) as {
     items: { id: string; price: number }[];
   };
-  const inventory = (await (await request.get(`${apiURL}/inventory`)).json()) as {
-    productId: string;
-    quantityAvailable: number;
-  }[];
-  const stock = new Map(inventory.map((i) => [i.productId, i.quantityAvailable]));
-  const product = items.find((p) => p.price > 0 && (stock.get(p.id) ?? 0) > 0);
+  // Public availability (the exact list is admin-only): the first product that is not out of stock.
+  let product: { id: string; price: number } | undefined;
+  for (const candidate of items.filter((p) => p.price > 0)) {
+    const response = await request.get(`${apiURL}/inventory/${candidate.id}`);
+    if (!response.ok()) continue;
+    if (((await response.json()) as { availability: string }).availability !== "OutOfStock") {
+      product = candidate;
+      break;
+    }
+  }
   expect(product, "a product with a price and stock to order").toBeTruthy();
 
   const runId = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
