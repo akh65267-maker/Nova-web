@@ -4,25 +4,34 @@ import { expect, test, type APIRequestContext } from "@playwright/test";
 // app is actually configured to call rather than one it assumes.
 const apiURL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
+// Exact stock is for administrators only. The tests that need it read it with the administrator
+// account from the environment (the same ADMIN_EMAIL / ADMIN_PASSWORD the admin app's tests use);
+// without one they still run, and skip only the "stock really moved" check.
+const adminEmail = process.env.ADMIN_EMAIL;
+const adminPassword = process.env.ADMIN_PASSWORD;
+
 type Product = { id: string; name: string; price: number };
-type InventoryItem = { productId: string; quantityAvailable: number };
 
 /**
- * Picks a real product that can actually be bought, via the public endpoints,
- * instead of depending on fixed seed data. Requires a catalog entry and an
- * inventory record with stock; a non-zero price rules out placeholder rows.
+ * Picks a real product that can actually be bought, through the public endpoints, instead of
+ * depending on fixed seed data. Requires a catalog entry whose public availability is not
+ * "OutOfStock"; a non-zero price rules out placeholder rows.
  */
 async function findPurchasableProduct(request: APIRequestContext): Promise<Product> {
   const productsResponse = await request.get(`${apiURL}/products?pageSize=100`);
   expect(productsResponse.ok(), "GET /products through the gateway").toBeTruthy();
   const { items } = (await productsResponse.json()) as { items: Product[] };
 
-  const inventoryResponse = await request.get(`${apiURL}/inventory`);
-  expect(inventoryResponse.ok(), "GET /inventory through the gateway").toBeTruthy();
-  const inventory = (await inventoryResponse.json()) as InventoryItem[];
-
-  const stock = new Map(inventory.map((i) => [i.productId, i.quantityAvailable]));
-  const product = items.find((p) => p.price > 0 && (stock.get(p.id) ?? 0) > 0);
+  let product: Product | undefined;
+  for (const candidate of items.filter((p) => p.price > 0)) {
+    const response = await request.get(`${apiURL}/inventory/${candidate.id}`);
+    if (!response.ok()) continue;
+    const { availability } = (await response.json()) as { availability: string };
+    if (availability !== "OutOfStock") {
+      product = candidate;
+      break;
+    }
+  }
 
   // Locally an empty catalog just skips these tests. In CI it is a failure: the backend there
   // is started with a seeded product, and a skipped checkout test would pass for nothing.
@@ -34,10 +43,22 @@ async function findPurchasableProduct(request: APIRequestContext): Promise<Produ
   return product!;
 }
 
-async function quantityAvailable(request: APIRequestContext, productId: string): Promise<number> {
-  const response = await request.get(`${apiURL}/inventory/${productId}`);
-  expect(response.ok()).toBeTruthy();
-  return ((await response.json()) as InventoryItem).quantityAvailable;
+// The exact quantity, which only an administrator may read; null when no administrator is configured.
+async function exactQuantity(request: APIRequestContext, productId: string): Promise<number | null> {
+  if (!adminEmail || !adminPassword) {
+    // In CI the administrator exists, and the stock check must not be skipped silently.
+    expect(process.env.CI, "CI should provide ADMIN_EMAIL and ADMIN_PASSWORD").toBeFalsy();
+    return null;
+  }
+  const login = await request.post(`${apiURL}/users/login`, { data: { email: adminEmail, password: adminPassword } });
+  expect(login.ok(), "signing in as the administrator").toBeTruthy();
+  const { token } = (await login.json()) as { token: string };
+
+  const response = await request.get(`${apiURL}/inventory/${productId}/quantity`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  expect(response.ok(), "reading exact stock as the administrator").toBeTruthy();
+  return ((await response.json()) as { quantityAvailable: number }).quantityAvailable;
 }
 
 test("catalog loads products from the backend", async ({ page }) => {
@@ -50,7 +71,7 @@ test("catalog loads products from the backend", async ({ page }) => {
 
 test("a new customer can check out and the order is confirmed", async ({ page, request }) => {
   const product = await findPurchasableProduct(request);
-  const stockBefore = await quantityAvailable(request, product.id);
+  const stockBefore = await exactQuantity(request, product.id);
 
   // A fresh account per run: no stored credentials, and no state shared with
   // earlier runs. Registration signs in and lands on /account.
@@ -79,7 +100,9 @@ test("a new customer can check out and the order is confirmed", async ({ page, r
 
   // The UI saying Confirmed is not enough on its own: prove the reservation
   // really reached InventoryService by checking the stock moved.
-  expect(await quantityAvailable(request, product.id)).toBe(stockBefore - 1);
+  if (stockBefore !== null) {
+    expect(await exactQuantity(request, product.id)).toBe(stockBefore - 1);
+  }
 });
 
 test("signing out empties the cart", async ({ page, request }) => {

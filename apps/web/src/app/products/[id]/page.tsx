@@ -13,8 +13,6 @@ import { MAX_PER_ORDER, useCartStore } from "@/store/cart-store";
 import { ProductIllustration } from "@/features/catalog/product-illustration";
 import { cn } from "@/lib/utils";
 
-const LOW_STOCK = 5;
-
 export default function ProductDetailPage(props: PageProps<"/products/[id]">) {
   const { id } = use(props.params);
   const { data: product, isLoading, isError } = useProduct(id);
@@ -62,11 +60,12 @@ export default function ProductDetailPage(props: PageProps<"/products/[id]">) {
     );
   }
 
-  const available = inventory?.quantityAvailable ?? 0;
-  const inStock = available > 0;
+  // The server tells the public a status, and the exact number only when it is 10 or fewer, so
+  // the cap is the real number when that is the smaller one and the per-order limit otherwise.
+  const inStock = inventory !== null && inventory !== undefined && inventory.availability !== "OutOfStock";
   const canAddToCart = !isInventoryLoading && inStock;
-  const maxQuantity = Math.min(available, MAX_PER_ORDER);
-  const lowStock = inStock && available <= LOW_STOCK;
+  const maxQuantity = Math.min(inventory?.remaining ?? MAX_PER_ORDER, MAX_PER_ORDER);
+  const lowStock = inventory?.availability === "LowStock";
 
   return (
     <div className="mx-auto w-full max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
@@ -113,7 +112,7 @@ export default function ProductDetailPage(props: PageProps<"/products/[id]">) {
                   inStock && !lowStock && "bg-success",
                 )}
               />
-              {!inStock ? "Currently unavailable" : lowStock ? `Only ${available} left` : "In stock"}
+              {!inStock ? "Currently unavailable" : lowStock ? `Only ${inventory?.remaining} left` : "In stock"}
             </p>
           )}
 
