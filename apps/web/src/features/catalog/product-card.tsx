@@ -8,10 +8,14 @@ import { Button } from "@taskmanager/ui/components/button";
 import { useCartStore } from "@/store/cart-store";
 import { toast } from "sonner";
 import type { ProductDto } from "@taskmanager/api/catalog-api";
+import { useInventory } from "@taskmanager/api/use-inventory";
 import { ProductPicture } from "./product-picture";
 
 export function ProductCard({ product }: { product: ProductDto }) {
   const addItem = useCartStore((state) => state.addItem);
+  // The same lookup (and cache entry) as the product page: a product with no stock, or none on record, cannot be added.
+  const { data: inventory, isLoading: isInventoryLoading } = useInventory(product.id);
+  const inStock = inventory !== null && inventory !== undefined && inventory.availability !== "OutOfStock";
   // Confirms the click on the button itself, so it does not rely on the toast alone.
   const [added, setAdded] = useState(false);
 
@@ -52,6 +56,7 @@ export function ProductCard({ product }: { product: ProductDto }) {
         <Button
           className="w-full"
           variant={added ? "secondary" : "default"}
+          disabled={isInventoryLoading || !inStock}
           onClick={() => {
             addItem({
               productId: product.id,
@@ -67,6 +72,8 @@ export function ProductCard({ product }: { product: ProductDto }) {
             <>
               <Check className="size-4" /> Added
             </>
+          ) : !isInventoryLoading && !inStock ? (
+            "Out of stock"
           ) : (
             "Add to cart"
           )}
