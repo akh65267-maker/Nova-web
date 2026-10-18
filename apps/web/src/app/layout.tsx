@@ -5,6 +5,7 @@ import "./globals.css";
 import { QueryProvider } from "@/providers/query-provider";
 import { StoreHydrator } from "@/providers/store-hydrator";
 import { SiteHeader } from "@/components/layout/site-header";
+import { AssistantPanel } from "@/features/assistant/assistant-panel";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { CartDrawer } from "@/components/layout/cart-drawer";
 import { Toaster } from "@taskmanager/ui/components/sonner";
@@ -39,6 +40,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             <main className="flex flex-1 flex-col">{children}</main>
             <SiteFooter />
             <CartDrawer />
+            <AssistantPanel />
             <Toaster />
           </QueryProvider>
         </ThemeProvider>
