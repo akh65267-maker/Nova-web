@@ -37,6 +37,8 @@ export type SessionHandlers = {
 const RENEW_BELOW_SECONDS = 30;
 
 const TIMEOUT_MS = 30_000;
+// A language model answering on a small machine is slow; only the assistant gets more time.
+const ASSISTANT_TIMEOUT_MS = 120_000;
 const NO_BODY_METHODS = new Set(["GET", "HEAD"]);
 // Headers that describe the connection or the encoding of the response as the gateway sent it,
 // not as this server will send it (fetch has already decoded the body).
@@ -171,6 +173,7 @@ export function createSessionHandlers(config: SessionConfig): SessionHandlers {
       const url = new URL(request.url);
       if (!url.pathname.startsWith(prefix)) return json(404, { title: "Not found" });
       const target = `${gatewayUrl}${url.pathname.slice(prefix.length)}${url.search}`;
+      const timeoutMs = url.pathname.slice(prefix.length).startsWith("/assistant/") ? ASSISTANT_TIMEOUT_MS : TIMEOUT_MS;
 
       const secure = isSecureRequest(request);
       const address = clientAddress(request.headers);
@@ -220,7 +223,7 @@ export function createSessionHandlers(config: SessionConfig): SessionHandlers {
         // The gateway is given the token and never the browser's cookies.
         if (access) headers.set("authorization", `Bearer ${access}`);
 
-        return fetch(target, { method: request.method, headers, body, redirect: "manual", signal: AbortSignal.timeout(TIMEOUT_MS) });
+        return fetch(target, { method: request.method, headers, body, redirect: "manual", signal: AbortSignal.timeout(timeoutMs) });
       };
 
       let gatewayResponse: Response;
