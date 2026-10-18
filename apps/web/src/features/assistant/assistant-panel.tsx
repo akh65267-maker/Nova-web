@@ -5,6 +5,7 @@ import { MessageCircle, Send, X } from "lucide-react";
 import { useAskAssistant } from "@taskmanager/api/assistant-api";
 import { getApiErrorMessage } from "@taskmanager/api/errors";
 import { useSessionStore } from "@taskmanager/auth/session-store";
+import { useCartStore } from "@/store/cart-store";
 import { Button } from "@taskmanager/ui/components/button";
 import { Input } from "@taskmanager/ui/components/input";
 
@@ -12,13 +13,14 @@ type Line = { from: "you" | "assistant"; text: string };
 
 const MAX_LENGTH = 1000;
 
-/** A small chat for signed-in customers. The assistant can look things up (products, their own basket) but cannot change anything. */
+/** A small chat for signed-in customers. The assistant can look things up (products, their own orders, the cart shown here) but cannot change anything. */
 export function AssistantPanel() {
   const signedIn = useSessionStore((state) => state.isAuthenticated());
   const [open, setOpen] = useState(false);
   const [text, setText] = useState("");
   const [lines, setLines] = useState<Line[]>([]);
   const ask = useAskAssistant();
+  const cart = useCartStore((state) => state.items);
   const end = useRef<HTMLDivElement>(null);
 
   if (!signedIn) return null;
@@ -33,7 +35,7 @@ export function AssistantPanel() {
     if (!message || ask.isPending) return;
     setText("");
     add({ from: "you", text: message });
-    ask.mutate(message, {
+    ask.mutate({ message, cart: cart.map(({ name, price, quantity }) => ({ name, price, quantity })) }, {
       onSuccess: (answer) => add({ from: "assistant", text: answer.reply || "I have no answer for that." }),
       onError: (error) =>
         add({ from: "assistant", text: getApiErrorMessage(error, "The assistant is not available right now.") }),
@@ -68,7 +70,7 @@ export function AssistantPanel() {
 
       <div className="flex-1 space-y-2 overflow-y-auto p-3 text-sm" aria-live="polite">
         {lines.length === 0 && (
-          <p className="text-muted-foreground">Ask about products or what is in your basket. I can look things up, not buy anything.</p>
+          <p className="text-muted-foreground">Ask about products, your cart or your past orders. I can look things up, not buy anything.</p>
         )}
         {lines.map((line, index) => (
           <p
