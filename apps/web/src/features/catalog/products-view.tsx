@@ -1,0 +1,156 @@
+"use client";
+
+import { useRouter, useSearchParams } from "next/navigation";
+import { Button } from "@taskmanager/ui/components/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@taskmanager/ui/components/select";
+import { SearchX } from "lucide-react";
+import { ErrorState } from "@taskmanager/ui/components/error-state";
+import { getApiErrorMessage } from "@taskmanager/api/errors";
+import { EmptyState } from "@taskmanager/ui/components/empty-state";
+import { Skeleton } from "@taskmanager/ui/components/skeleton";
+import { useProducts } from "@taskmanager/api/use-products";
+import { ProductCard } from "./product-card";
+import { ProductFilters } from "./product-filters";
+import { PAGE_SIZE, readListState } from "./list-params";
+
+const SORT_LABELS: Record<string, string> = {
+  newest: "Newest",
+  "price-asc": "Price: Low to High",
+  "price-desc": "Price: High to Low",
+  name: "Name",
+};
+
+export function ProductsView() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  const { filters, sort, page, params } = readListState((name) => searchParams.get(name));
+
+  function updateParams(next: Record<string, string | number | null>) {
+    const params = new URLSearchParams(searchParams.toString());
+    for (const [key, value] of Object.entries(next)) {
+      if (value === null || value === "" || value === undefined) {
+        params.delete(key);
+      } else {
+        params.set(key, String(value));
+      }
+    }
+    if (!("page" in next)) {
+      params.delete("page");
+    }
+    router.push(`/products?${params.toString()}`);
+  }
+
+  const { data, isLoading, isFetching, isError, error, refetch } = useProducts(params);
+
+  const totalPages = data ? Math.max(1, Math.ceil(data.totalCount / PAGE_SIZE)) : 1;
+
+  return (
+    <div className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+      <div className="grid grid-cols-1 gap-8 md:grid-cols-[240px_1fr]">
+        <aside className="md:sticky md:top-20 md:self-start">
+          <ProductFilters
+            filters={filters}
+            onChange={(next) => {
+              updateParams({
+                category: next.category !== undefined ? next.category : filters.category,
+                minPrice: next.minPrice !== undefined ? next.minPrice : filters.minPrice,
+                maxPrice: next.maxPrice !== undefined ? next.maxPrice : filters.maxPrice,
+                search: next.search !== undefined ? next.search : filters.search,
+              });
+            }}
+          />
+        </aside>
+
+        {/* min-h: the footer would otherwise jump when the cards replace the skeletons */}
+        <div className="min-h-[100svh]">
+          <div className="mb-6 flex items-center justify-between gap-4">
+            {data ? (
+              <p className="text-sm text-muted-foreground">
+                {data.totalCount} {data.totalCount === 1 ? "product" : "products"}
+                {filters.search && ` for "${filters.search}"`}
+              </p>
+            ) : (
+              <Skeleton className="h-5 w-24" />
+            )}
+
+            <Select value={sort} onValueChange={(value) => updateParams({ sort: value as string })}>
+              <SelectTrigger className="w-48">
+                <SelectValue placeholder="Sort by">{(value) => SORT_LABELS[value as string]}</SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="newest">Newest</SelectItem>
+                <SelectItem value="price-asc">Price: Low to High</SelectItem>
+                <SelectItem value="price-desc">Price: High to Low</SelectItem>
+                <SelectItem value="name">Name</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {isLoading ? (
+            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+              {Array.from({ length: 8 }).map((_, i) => (
+                <div key={i} className="flex flex-col">
+                  <Skeleton className="aspect-square w-full" />
+                  <Skeleton className="h-[14.3rem] w-full" />
+                </div>
+              ))}
+            </div>
+          ) : isError && !data ? (
+            <ErrorState description={getApiErrorMessage(error, "Check your connection and try again.")} onRetry={() => refetch()} title="Couldn't load products" />
+          ) : data && data.items.length > 0 ? (
+            <div
+              className="grid grid-cols-2 gap-4 transition-opacity duration-200 sm:grid-cols-3 lg:grid-cols-4"
+              style={{ opacity: isFetching ? 0.6 : 1 }}
+            >
+              {data.items.map((product, index) => (
+                <ProductCard key={product.id} product={product} priority={index < 4} />
+              ))}
+            </div>
+          ) : (
+            <EmptyState
+              icon={SearchX}
+              title="No products found"
+              description="Nothing matches your filters. Try widening the price range or clearing them."
+              action={
+                <Button variant="outline" onClick={() => router.push("/products")}>
+                  Clear filters
+                </Button>
+              }
+            />
+          )}
+
+          {data && totalPages > 1 && (
+            <div className="mt-8 flex items-center justify-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={page <= 1}
+                onClick={() => updateParams({ page: page - 1 })}
+              >
+                Previous
+              </Button>
+              <span className="text-sm text-muted-foreground">
+                Page {page} of {totalPages}
+              </span>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={page >= totalPages}
+                onClick={() => updateParams({ page: page + 1 })}
+              >
+                Next
+              </Button>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
