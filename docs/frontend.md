@@ -354,6 +354,7 @@ desktop preset and default mobile throttling), seeded catalog.
 | `/products` | mobile | 79 | 0.9 s | 4.5 s | 160 ms | 0.117 |
 | `/products/[id]` | mobile | 85 | 0.9 s | 4.3 s | 80 ms | 0 |
 
-Findings: the LCP element is a product card image rendered with `loading="lazy"` (the first cards
-should be `priority`); `/products` shifts layout (0.19 desktop) when the grid replaces its skeleton.
+After the fixes (same method): `/products` CLS 0.193 -> 0 on desktop and 0.123 -> 0 on mobile (score 90 -> 99 and 79 -> 84). The first four cards load eagerly (`priority`), the skeletons match the real card height, and the Suspense fallback reserves the viewport so the footer no longer jumps.
+
+Still open: mobile LCP stays ~4.3 s on every page. The LCP image is no longer lazy, but it is only discovered after the browser has run the JS and fetched the product list (about 2.8 s of load delay on the throttled run). Getting under the 2.5 s budget needs the first page of products fetched on the server (or prefetched and dehydrated into React Query), which is a larger change.
 Budget for the redesign: mobile LCP < 2.5 s, CLS < 0.1, TBT < 200 ms.

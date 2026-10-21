@@ -12,15 +12,18 @@ export function ProductPicture({
   alt,
   sizes,
   className,
+  priority,
 }: {
   product: Pick<ProductDto, "name" | "category" | "imageUrl">;
   alt?: string;
   sizes: string;
   className?: string;
+  /** Load at once (and not lazily): for pictures that can be the largest paint of the page. */
+  priority?: boolean;
 }) {
   if (!product.imageUrl) return <ProductIllustration category={product.category} className={cn("h-full w-full", className)} />;
 
   // unoptimized: the picture is served as uploaded, with its own caching; the image optimizer
   // would need to be told which sources it may fetch.
-  return <Image src={product.imageUrl} alt={alt ?? product.name} fill sizes={sizes} unoptimized className={cn("object-cover", className)} />;
+  return <Image src={product.imageUrl} alt={alt ?? product.name} fill sizes={sizes} priority={priority} unoptimized className={cn("object-cover", className)} />;
 }

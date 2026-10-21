@@ -11,7 +11,7 @@ import type { ProductDto } from "@taskmanager/api/catalog-api";
 import { useInventory } from "@taskmanager/api/use-inventory";
 import { ProductPicture } from "./product-picture";
 
-export function ProductCard({ product }: { product: ProductDto }) {
+export function ProductCard({ product, priority }: { product: ProductDto; priority?: boolean }) {
   const addItem = useCartStore((state) => state.addItem);
   // The same lookup (and cache entry) as the product page: a product with no stock, or none on record, cannot be added.
   const { data: inventory, isLoading: isInventoryLoading } = useInventory(product.id);
@@ -32,6 +32,7 @@ export function ProductCard({ product }: { product: ProductDto }) {
           <ProductPicture
             product={product}
             alt=""
+            priority={priority}
             sizes="(min-width: 1024px) 25vw, (min-width: 640px) 33vw, 50vw"
             className="transition-transform duration-300 group-hover:scale-105"
           />

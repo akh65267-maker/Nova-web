@@ -52,11 +52,14 @@ export function NewArrivals() {
       >
         {isLoading
           ? Array.from({ length: 5 }).map((_, i) => (
-              <Skeleton key={i} className={`${ITEM} aspect-[3/4]`} />
+              <div key={i} className={`${ITEM} flex flex-col`}>
+                <Skeleton className="aspect-square w-full" />
+                <Skeleton className="h-[14.3rem] w-full" />
+              </div>
             ))
-          : data?.items.map((product) => (
+          : data?.items.map((product, index) => (
               <div key={product.id} className={ITEM}>
-                <ProductCard product={product} />
+                <ProductCard product={product} priority={index < 2} />
               </div>
             ))}
       </div>
