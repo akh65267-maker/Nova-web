@@ -6,7 +6,9 @@ import { QueryClient } from "@tanstack/react-query";
 export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 60 * 1000,
+      // Stock, prices and orders change behind the page: refetch on focus once 10s old, and poll a visible tab every 30s.
+      staleTime: 10 * 1000,
+      refetchInterval: 30 * 1000,
       retry: 1,
     },
   },
