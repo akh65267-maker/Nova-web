@@ -189,7 +189,7 @@ function DiscountField({ product }: { product: ProductDto }) {
   const { data: discount, isLoading } = useDiscount(product.id);
 
   return (
-    <div className="flex flex-col gap-1.5">
+    <div className="col-span-2 flex flex-col gap-1.5">
       <Label>Discount (optional)</Label>
       {isLoading ? <Skeleton className="h-9 w-full" /> : <DiscountForm key={JSON.stringify(discount ?? null)} product={product} discount={discount ?? null} />}
     </div>

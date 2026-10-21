@@ -50,7 +50,7 @@ export function ProductCard({ product, priority }: { product: ProductDto; priori
         >
           {product.name}
         </Link>
-        {product.ratingAverage !== null && (
+        {typeof product.ratingAverage === "number" && (
           <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
             <StarRating value={product.ratingAverage} className="[&_svg]:size-3.5" />
             {product.ratingAverage.toFixed(1)} ({product.ratingCount})
