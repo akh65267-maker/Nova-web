@@ -14,6 +14,7 @@ export function readListState(get: (name: string) => string | null | undefined) 
     brand: get("brand") ?? null,
     minPrice: Number(get("minPrice") ?? 0),
     maxPrice: Number(get("maxPrice") ?? MAX_PRICE),
+    onSale: get("onSale") === "true",
     search: get("search") ?? "",
   };
   const sort = (get("sort") ?? "newest") as ProductListParams["sort"];
@@ -23,6 +24,7 @@ export function readListState(get: (name: string) => string | null | undefined) 
     brand: filters.brand ?? undefined,
     minPrice: filters.minPrice > 0 ? filters.minPrice : undefined,
     maxPrice: filters.maxPrice < MAX_PRICE ? filters.maxPrice : undefined,
+    onSale: filters.onSale || undefined,
     search: filters.search || undefined,
     sort,
     page,

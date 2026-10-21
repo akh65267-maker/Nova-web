@@ -34,8 +34,11 @@ import {
   useUploadProductImage,
   useAddGalleryImage,
   useRemoveGalleryImage,
+  useDiscount,
+  useSetDiscount,
+  useClearDiscount,
 } from "@taskmanager/api/use-products";
-import type { ProductAttribute, ProductDto } from "@taskmanager/api/catalog-api";
+import type { DiscountDto, ProductAttribute, ProductDto } from "@taskmanager/api/catalog-api";
 import { useCreateInventory, useInventoryList, useRestockInventory } from "@taskmanager/api/use-inventory";
 import { useBrands } from "@taskmanager/api/use-brands";
 import { useCategories } from "@taskmanager/api/use-categories";
@@ -167,6 +170,85 @@ function GalleryField({ product }: { product: ProductDto }) {
               {add.isPending ? "Uploading..." : "Add picture"}
             </Button>
           </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// The input wants local time without a zone; the API wants UTC.
+const toLocalInput = (iso: string | null) => {
+  if (!iso) return "";
+  const date = new Date(iso);
+  return new Date(date.getTime() - date.getTimezoneOffset() * 60_000).toISOString().slice(0, 16);
+};
+const fromLocalInput = (value: string) => (value ? new Date(value).toISOString() : null);
+
+// One discount per product, as a percent or an amount, for as long as its dates allow. Saved at once.
+function DiscountField({ product }: { product: ProductDto }) {
+  const { data: discount, isLoading } = useDiscount(product.id);
+
+  return (
+    <div className="flex flex-col gap-1.5">
+      <Label>Discount (optional)</Label>
+      {isLoading ? <Skeleton className="h-9 w-full" /> : <DiscountForm key={JSON.stringify(discount ?? null)} product={product} discount={discount ?? null} />}
+    </div>
+  );
+}
+
+function DiscountForm({ product, discount }: { product: ProductDto; discount: DiscountDto | null }) {
+  const save = useSetDiscount(product.id);
+  const clear = useClearDiscount(product.id);
+  const [kind, setKind] = useState<DiscountDto["kind"]>(discount?.kind ?? "Percent");
+  const [value, setValue] = useState(discount ? String(discount.value) : "");
+  const [startsAt, setStartsAt] = useState(toLocalInput(discount?.startsAtUtc ?? null));
+  const [endsAt, setEndsAt] = useState(toLocalInput(discount?.endsAtUtc ?? null));
+  const busy = save.isPending || clear.isPending;
+  const fail = (error: unknown) => toast.error(getApiErrorMessage(error));
+
+  return (
+    <div className="flex flex-col gap-2">
+      <div className="grid grid-cols-[8rem_1fr] gap-2">
+        <select
+          aria-label="Discount type"
+          value={kind}
+          onChange={(e) => setKind(e.target.value as DiscountDto["kind"])}
+          className="h-9 rounded-lg border bg-transparent px-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        >
+          <option value="Percent">Percent off</option>
+          <option value="Fixed">Amount off</option>
+        </select>
+        <Input aria-label="Discount value" type="number" min="0" step="0.01" placeholder={kind === "Percent" ? "e.g. 15" : "e.g. 10.00"} value={value} onChange={(e) => setValue(e.target.value)} />
+      </div>
+      <div className="grid grid-cols-2 gap-2">
+        <div className="flex flex-col gap-1">
+          <span className="text-xs text-muted-foreground">Starts (blank: now)</span>
+          <Input aria-label="Discount starts" type="datetime-local" value={startsAt} onChange={(e) => setStartsAt(e.target.value)} />
+        </div>
+        <div className="flex flex-col gap-1">
+          <span className="text-xs text-muted-foreground">Ends (blank: never)</span>
+          <Input aria-label="Discount ends" type="datetime-local" value={endsAt} onChange={(e) => setEndsAt(e.target.value)} />
+        </div>
+      </div>
+      <div className="flex gap-2">
+        <Button
+          type="button"
+          size="sm"
+          variant="outline"
+          disabled={busy || value === ""}
+          onClick={() =>
+            save.mutate(
+              { kind, value: Number(value), startsAtUtc: fromLocalInput(startsAt), endsAtUtc: fromLocalInput(endsAt) },
+              { onSuccess: () => toast.success("Discount saved"), onError: fail },
+            )
+          }
+        >
+          {save.isPending ? "Saving..." : discount ? "Update discount" : "Set discount"}
+        </Button>
+        {discount && (
+          <Button type="button" size="sm" variant="ghost" disabled={busy} onClick={() => clear.mutate(undefined, { onSuccess: () => toast.success("Discount removed"), onError: fail })}>
+            Remove
+          </Button>
         )}
       </div>
     </div>
@@ -314,7 +396,7 @@ function EditProductDialog({ product }: { product: ProductDto }) {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState(product.name);
   const [description, setDescription] = useState(product.description);
-  const [price, setPrice] = useState(String(product.price));
+  const [price, setPrice] = useState(String(product.listPrice));
   const [category, setCategory] = useState(product.category);
   const [brand, setBrand] = useState(product.brand ?? "");
   const [attributes, setAttributes] = useState<ProductAttribute[]>(product.attributes);
@@ -329,7 +411,7 @@ function EditProductDialog({ product }: { product: ProductDto }) {
     if (next) {
       setName(product.name);
       setDescription(product.description);
-      setPrice(String(product.price));
+      setPrice(String(product.listPrice));
       setCategory(product.category);
       setBrand(product.brand ?? "");
       setAttributes(product.attributes);
@@ -379,6 +461,7 @@ function EditProductDialog({ product }: { product: ProductDto }) {
             <BrandField id={`edit-brand-${product.id}`} value={brand} onChange={setBrand} />
             <AttributesField value={attributes} onChange={setAttributes} />
             <GalleryField product={product} />
+            <DiscountField product={product} />
 
             <div className="flex flex-col gap-1.5">
               <Label>Category</Label>
@@ -599,7 +682,12 @@ export default function AdminProductsPage() {
                   <PictureControl product={product} />
                 </TableCell>
                 <TableCell>{product.category}</TableCell>
-                <TableCell>${product.price.toFixed(2)}</TableCell>
+                <TableCell>
+                  ${product.price.toFixed(2)}
+                  {product.discountPercent !== null && (
+                    <span className="ml-2 text-xs text-muted-foreground line-through">${product.listPrice.toFixed(2)}</span>
+                  )}
+                </TableCell>
                 <TableCell>
                   <div className="flex items-center gap-3">
                     <span className="min-w-16 text-right text-sm tabular-nums">
