@@ -10,8 +10,8 @@ const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "TaskManager Admin",
-  description: "Administration for the TaskManager shop",
+  title: "Nova Commerce Admin",
+  description: "Administration for the Nova Commerce shop",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
