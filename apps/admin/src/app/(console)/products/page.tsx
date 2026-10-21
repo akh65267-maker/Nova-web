@@ -358,8 +358,8 @@ function PictureControl({ product }: { product: ProductDto }) {
         <Dialog>
           <DialogTrigger
             render={
-              <button type="button" aria-label={`View the picture of ${product.name}`} className="cursor-zoom-in rounded-md focus-visible:ring-2 focus-visible:ring-ring">
-                <Image src={product.imageUrl} alt="" width={40} height={40} unoptimized className="size-10 rounded-md object-cover ring-1 ring-foreground/10" />
+              <button type="button" className="cursor-zoom-in rounded-md focus-visible:ring-2 focus-visible:ring-ring">
+                <Image src={product.imageUrl} alt={`Picture of ${product.name}`} width={40} height={40} unoptimized className="size-10 rounded-md object-cover ring-1 ring-foreground/10" />
               </button>
             }
           />
