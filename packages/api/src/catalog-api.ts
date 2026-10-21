@@ -45,7 +45,10 @@ export type ProductListParams = {
   /** Only products with an active discount. */
   onSale?: boolean;
   search?: string;
-  sort?: "newest" | "price-asc" | "price-desc" | "name";
+  /** "best-offer": the deepest discount first. */
+  sort?: "newest" | "price-asc" | "price-desc" | "name" | "best-offer";
+  /** Only these products (at most 100). */
+  ids?: string[];
   page?: number;
   pageSize?: number;
   /** Admin only: also list archived products (ignored for anyone else). */
@@ -53,8 +56,20 @@ export type ProductListParams = {
 };
 
 export async function listProducts(params: ProductListParams): Promise<ProductListResult> {
-  const { data } = await apiClient.get<ProductListResult>("/products", { params });
+  const { ids, ...rest } = params;
+  const { data } = await apiClient.get<ProductListResult>("/products", { params: { ...rest, ids: ids?.join(",") } });
   return data;
+}
+
+/** The products customers bought most in the last 30 days, best first. */
+export async function listTopSelling(limit = 8): Promise<ProductDto[]> {
+  const { data: ids } = await apiClient.get<string[]>("/orders/top-selling", { params: { limit } });
+  if (ids.length === 0) return [];
+
+  const { items } = await listProducts({ ids, pageSize: ids.length });
+  const rank = new Map(ids.map((id, index) => [id, index]));
+
+  return items.sort((a, b) => (rank.get(a.id) ?? 0) - (rank.get(b.id) ?? 0));
 }
 
 export async function getProduct(id: string): Promise<ProductDto> {

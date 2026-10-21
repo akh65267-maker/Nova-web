@@ -3,7 +3,7 @@ import Link from "next/link";
 import { Button } from "@taskmanager/ui/components/button";
 import { Card, CardContent } from "@taskmanager/ui/components/card";
 import { fetchCategories } from "@/lib/catalog-server";
-import { NewArrivals } from "@/features/catalog/product-row";
+import { BestOffers, NewArrivals, TopSelling } from "@/features/catalog/product-row";
 import { ProductIllustration } from "@/features/catalog/product-illustration";
 import { cn } from "@/lib/utils";
 
@@ -119,6 +119,8 @@ export default async function Home() {
       </section>
 
       <NewArrivals />
+      <TopSelling />
+      <BestOffers />
 
       {/* ── Category grid ────────────────────────────── */}
       {categories.length > 0 && (

@@ -8,6 +8,7 @@ import {
   getDiscount,
   getProduct,
   listProducts,
+  listTopSelling,
   listRelatedProducts,
   setDiscount,
   setProductArchived,
@@ -31,6 +32,14 @@ export function useProduct(id: string) {
     queryKey: ["product", id],
     queryFn: () => getProduct(id),
     enabled: Boolean(id),
+  });
+}
+
+export function useTopSelling(limit = 8) {
+  return useQuery({
+    queryKey: ["top-selling", limit],
+    queryFn: () => listTopSelling(limit),
+    staleTime: 5 * 60_000,
   });
 }
 
