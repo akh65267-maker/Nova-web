@@ -384,7 +384,7 @@ function PictureControl({ product }: { product: ProductDto }) {
   }
 
   return (
-    <div className="flex items-center gap-3">
+    <div className="flex w-max items-center gap-3">
       {product.imageUrl ? (
         <Dialog>
           <DialogTrigger
@@ -405,13 +405,14 @@ function PictureControl({ product }: { product: ProductDto }) {
         <span className="flex size-10 items-center justify-center rounded-md bg-muted text-xs text-muted-foreground">None</span>
       )}
       <input ref={input} type="file" accept={PICTURE_TYPES.join(",")} className="hidden" aria-label={`Choose a picture for ${product.name}`} onChange={handleChoose} />
-      <Button size="sm" variant="outline" disabled={upload.isPending || remove.isPending} onClick={() => input.current?.click()}>
+      <Button size="sm" variant="outline" className="shrink-0" disabled={upload.isPending || remove.isPending} onClick={() => input.current?.click()}>
         {upload.isPending ? "Uploading..." : product.imageUrl ? "Replace" : "Upload"}
       </Button>
       {product.imageUrl && (
         <Button
           size="sm"
           variant="ghost"
+          className="shrink-0"
           disabled={upload.isPending || remove.isPending}
           onClick={() =>
             remove.mutate(product.id, { onSuccess: () => toast.success("Picture removed"), onError: (error) => toast.error(getApiErrorMessage(error)) })
