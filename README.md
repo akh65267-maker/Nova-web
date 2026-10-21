@@ -1,6 +1,6 @@
 # taskmanager-web
 
-The storefront and the admin console for the TaskManager backend, a Next.js 16 app in an npm-workspaces monorepo. Architecture and conventions: [docs/frontend.md](docs/frontend.md). The backend lives in the separate `TaskManager` repository.
+The Nova Commerce storefront and admin console (backend: the `TaskManager` repository), a Next.js 16 app in an npm-workspaces monorepo. Architecture and conventions: [docs/frontend.md](docs/frontend.md). The backend lives in the separate `TaskManager` repository.
 
 ## Repository layout
 

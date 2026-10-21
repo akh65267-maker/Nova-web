@@ -41,7 +41,7 @@ export default function ConsoleLayout({ children }: { children: React.ReactNode 
       <header className="border-b">
         <div className="mx-auto flex h-14 w-full max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
           <p className="flex shrink-0 items-center gap-2 whitespace-nowrap text-sm font-semibold">
-            <ShieldCheck className="size-4 text-primary" /> TaskManager Admin
+            <ShieldCheck className="size-4 text-primary" /> Nova Commerce Admin
           </p>
           <div className="flex items-center gap-1">
             <Button variant="ghost" size="sm" nativeButton={false} render={<a href={SHOP_URL} aria-label="Back to shop"><ArrowLeft className="size-4" /> <span className="hidden sm:inline">Back to shop</span></a>} />

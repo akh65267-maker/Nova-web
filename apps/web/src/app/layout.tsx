@@ -21,7 +21,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "TaskManager Shop",
+  title: "Nova Commerce",
   description: "Full-stack e-commerce storefront",
 };
 

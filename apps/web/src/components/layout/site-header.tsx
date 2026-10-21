@@ -98,7 +98,7 @@ export function SiteHeader() {
     <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="mx-auto flex h-16 max-w-7xl items-center gap-4 px-4 sm:px-6 lg:px-8">
         <Link href="/" className="text-lg font-bold tracking-tight">
-          TaskManager Shop
+          Nova Commerce
         </Link>
 
         <nav className="hidden items-center gap-6 text-sm font-medium md:flex">
