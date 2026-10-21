@@ -1,7 +1,9 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   createProduct,
+  addGalleryImage,
   deleteProductImage,
+  removeGalleryImage,
   getProduct,
   listProducts,
   setProductArchived,
@@ -82,6 +84,30 @@ export function useDeleteProductImage() {
   return useMutation({
     mutationFn: (id: string) => deleteProductImage(id),
     onSuccess: (_result, id) => {
+      queryClient.invalidateQueries({ queryKey: ["products"] });
+      queryClient.invalidateQueries({ queryKey: ["product", id] });
+    },
+  });
+}
+
+export function useAddGalleryImage() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, file }: { id: string; file: File }) => addGalleryImage(id, file),
+    onSuccess: (_result, { id }) => {
+      queryClient.invalidateQueries({ queryKey: ["products"] });
+      queryClient.invalidateQueries({ queryKey: ["product", id] });
+    },
+  });
+}
+
+export function useRemoveGalleryImage() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, version }: { id: string; version: string }) => removeGalleryImage(id, version),
+    onSuccess: (_result, { id }) => {
       queryClient.invalidateQueries({ queryKey: ["products"] });
       queryClient.invalidateQueries({ queryKey: ["product", id] });
     },

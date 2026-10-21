@@ -15,6 +15,8 @@ export type ProductDto = {
   brand: string | null;
   /** Named facts such as Colour: Black, in the order the admin gave them. */
   attributes: ProductAttribute[];
+  /** Extra pictures beside the main one, in the order they were added. */
+  gallery: string[];
   /** Where the picture is (the URL carries its version), or null when the product has none. */
   imageUrl: string | null;
   /** Off sale. Only the admin console is ever sent an archived product. */
@@ -86,6 +88,19 @@ export async function uploadProductImage(id: string, file: Blob): Promise<{ imag
 
 export async function deleteProductImage(id: string): Promise<void> {
   await apiClient.delete(`/products/${id}/image`);
+}
+
+/** Admin only. Adds a picture to the product's gallery (at most 8). */
+export async function addGalleryImage(id: string, file: Blob): Promise<{ url: string }> {
+  const { data } = await apiClient.post<{ url: string }>(`/products/${id}/gallery`, file, {
+    headers: { "Content-Type": file.type },
+  });
+  return data;
+}
+
+/** Admin only. `version` is the last part of the picture's URL. */
+export async function removeGalleryImage(id: string, version: string): Promise<void> {
+  await apiClient.delete(`/products/${id}/gallery/${version}`);
 }
 
 export type CategoryDto = {
