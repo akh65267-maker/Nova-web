@@ -103,6 +103,7 @@ export function SiteHeader() {
       data-scrolled={scrolled}
       className="sticky top-0 z-50 border-b border-transparent bg-background/70 backdrop-blur-xl backdrop-saturate-150 transition-[border-color,background-color] duration-300 data-[scrolled=true]:border-border data-[scrolled=true]:bg-background/85"
     >
+      <div aria-hidden className="scroll-progress pointer-events-none absolute inset-x-0 -bottom-px h-0.5 origin-left bg-primary" />
       <div className="mx-auto flex h-16 max-w-7xl items-center gap-4 px-4 sm:px-6 lg:px-8">
         <MobileMenu />
 

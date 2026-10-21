@@ -94,3 +94,45 @@
     animation: none;
   }
 }
+
+/* ── Staggered tiles and scroll progress ─────────────────
+   Tiles in a grid rise one after the other as the row enters; the header carries a thin line that
+   fills as the page is read. Both follow the scroll position with no script, and both are off
+   without support or for reduced motion. */
+@supports (animation-timeline: view()) {
+  @keyframes reveal-item {
+    from {
+      opacity: 0;
+      transform: translateY(32px) scale(0.97);
+    }
+  }
+
+  .reveal-item {
+    animation: reveal-item linear both;
+    animation-timeline: view();
+    animation-range: entry calc(var(--i, 0) * 6%) entry calc(45% + var(--i, 0) * 6%);
+  }
+}
+
+@supports (animation-timeline: scroll()) {
+  @keyframes scroll-progress {
+    from {
+      transform: scaleX(0);
+    }
+  }
+
+  .scroll-progress {
+    animation: scroll-progress linear both;
+    animation-timeline: scroll(root);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal-item {
+    animation: none;
+  }
+
+  .scroll-progress {
+    display: none;
+  }
+}

@@ -92,6 +92,11 @@ export function mountScene(canvas: HTMLCanvasElement, { compact }: { compact: bo
     last = now;
     const t = now / 1000;
 
+    // Scrolling the hero away lifts the shapes and tilts the whole group a little.
+    const scrolled = Math.min(window.scrollY / Math.max(canvas.clientHeight, 1), 1.5);
+    group.position.y = scrolled * 2.2;
+    group.rotation.z = scrolled * 0.35;
+
     pointer.x += (pointer.tx - pointer.x) * 0.05;
     pointer.y += (pointer.ty - pointer.y) * 0.05;
     for (const shape of shapes) {

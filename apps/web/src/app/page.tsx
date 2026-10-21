@@ -132,10 +132,12 @@ export default async function Home() {
             Shop by category
           </h2>
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-            {categories.map(({ id, name: category }) => (
+            {categories.map(({ id, name: category }, i) => (
               <Link
                 key={id}
                 href={{ pathname: "/products", query: { category } }}
+                style={{ "--i": i } as CSSProperties}
+                className="reveal-item"
               >
                 <Card className="group gap-0 overflow-hidden py-0 transition-shadow hover:shadow-md">
                   <div className="aspect-[4/3] overflow-hidden">
