@@ -11,16 +11,47 @@ export type Availability = {
   remaining: number | null;
 };
 
-export async function getInventory(productId: string): Promise<Availability | null> {
-  try {
-    const { data } = await apiClient.get<Availability>(`/inventory/${productId}`);
-    return data;
-  } catch (error) {
-    if (error && typeof error === "object" && "response" in error) {
-      const status = (error as { response?: { status?: number } }).response?.status;
-      if (status === 404) return null;
+// The most ids the server answers in one call (InventoryItemsService.MaxBatch).
+const MAX_BATCH = 100;
+
+export async function getAvailabilityMany(productIds: string[]): Promise<Availability[]> {
+  const { data } = await apiClient.get<Availability[]>("/inventory/availability", {
+    params: { ids: productIds },
+    paramsSerializer: { indexes: null }, // ?ids=a&ids=b, the form the server reads
+  });
+  return data;
+}
+
+type Waiting = { resolve: (value: Availability | null) => void; reject: (reason: unknown) => void };
+const waiting = new Map<string, Waiting[]>();
+
+/**
+ * One product's availability (null when it has no stock record). Lookups made in the same tick -
+ * a grid of cards each asking about its own product - go out as a single request, so the
+ * per-product cache keys and callers stay as they were.
+ */
+export function getInventory(productId: string): Promise<Availability | null> {
+  return new Promise((resolve, reject) => {
+    const callers = waiting.get(productId);
+    if (callers) callers.push({ resolve, reject });
+    else waiting.set(productId, [{ resolve, reject }]);
+    if (waiting.size === 1 && !callers) setTimeout(flushWaiting, 0);
+  });
+}
+
+async function flushWaiting(): Promise<void> {
+  const batch = new Map(waiting);
+  waiting.clear();
+  const ids = [...batch.keys()];
+
+  for (let start = 0; start < ids.length; start += MAX_BATCH) {
+    const chunk = ids.slice(start, start + MAX_BATCH);
+    try {
+      const found = new Map((await getAvailabilityMany(chunk)).map((a) => [a.productId, a]));
+      for (const id of chunk) for (const caller of batch.get(id)!) caller.resolve(found.get(id) ?? null);
+    } catch (error) {
+      for (const id of chunk) for (const caller of batch.get(id)!) caller.reject(error);
     }
-    throw error;
   }
 }
 
