@@ -74,6 +74,12 @@ export async function updateProduct(id: string, request: CreateProductRequest): 
   await apiClient.put(`/products/${id}`, request);
 }
 
+/** Products on sale like this one (same brand or category), never the product itself. */
+export async function listRelatedProducts(id: string): Promise<ProductDto[]> {
+  const { data } = await apiClient.get<ProductDto[]>(`/products/${id}/related`);
+  return data;
+}
+
 /** Admin only. Archiving takes a product off sale without deleting it (orders still refer to it). */
 export async function setProductArchived(id: string, archived: boolean): Promise<void> {
   await apiClient.post(`/products/${id}/${archived ? "archive" : "restore"}`);

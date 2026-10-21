@@ -6,6 +6,7 @@ import {
   removeGalleryImage,
   getProduct,
   listProducts,
+  listRelatedProducts,
   setProductArchived,
   updateProduct,
   uploadProductImage,
@@ -26,6 +27,15 @@ export function useProduct(id: string) {
     queryKey: ["product", id],
     queryFn: () => getProduct(id),
     enabled: Boolean(id),
+  });
+}
+
+export function useRelatedProducts(id: string) {
+  return useQuery({
+    queryKey: ["related", id],
+    queryFn: () => listRelatedProducts(id),
+    enabled: Boolean(id),
+    staleTime: 5 * 60_000,
   });
 }
 

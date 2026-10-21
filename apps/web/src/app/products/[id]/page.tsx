@@ -11,6 +11,7 @@ import { useProduct } from "@taskmanager/api/use-products";
 import { useInventory } from "@taskmanager/api/use-inventory";
 import { MAX_PER_ORDER, useCartStore } from "@/store/cart-store";
 import { ProductGallery } from "@/features/catalog/product-gallery";
+import { RelatedProducts } from "@/features/catalog/related-products";
 import { cn } from "@/lib/utils";
 
 export default function ProductDetailPage(props: PageProps<"/products/[id]">) {
@@ -198,6 +199,8 @@ export default function ProductDetailPage(props: PageProps<"/products/[id]">) {
           </dl>
         </section>
       )}
+
+      <RelatedProducts productId={product.id} />
     </div>
   );
 }
