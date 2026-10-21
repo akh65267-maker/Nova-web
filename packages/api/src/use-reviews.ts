@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { deleteMyReview, listReviews, saveReview } from "./catalog-api";
+import { deleteMyReview, deleteReview, listReviews, saveReview } from "./catalog-api";
 
 export function useReviews(productId: string) {
   return useQuery({
@@ -26,6 +26,16 @@ export function useSaveReview(productId: string) {
 
   return useMutation({
     mutationFn: (review: { rating: number; body: string }) => saveReview(productId, review),
+    onSuccess: refresh,
+  });
+}
+
+/** Admin only: removes anyone's review. */
+export function useDeleteReview(productId: string) {
+  const refresh = useRefreshAfterChange(productId);
+
+  return useMutation({
+    mutationFn: (reviewId: string) => deleteReview(productId, reviewId),
     onSuccess: refresh,
   });
 }

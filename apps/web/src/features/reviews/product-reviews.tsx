@@ -7,7 +7,7 @@ import { toast } from "sonner";
 import { Button } from "@taskmanager/ui/components/button";
 import { Label } from "@taskmanager/ui/components/label";
 import { Skeleton } from "@taskmanager/ui/components/skeleton";
-import { useDeleteMyReview, useReviews, useSaveReview } from "@taskmanager/api/use-reviews";
+import { useDeleteMyReview, useDeleteReview, useReviews, useSaveReview } from "@taskmanager/api/use-reviews";
 import { getApiErrorMessage } from "@taskmanager/api/errors";
 import { useSessionStore } from "@taskmanager/auth/session-store";
 import { cn } from "@/lib/utils";
@@ -18,6 +18,8 @@ const MAX_LENGTH = 2000;
 export function ProductReviews({ productId }: { productId: string }) {
   const { data, isLoading } = useReviews(productId);
   const isAuthenticated = useSessionStore((state) => state.isAuthenticated());
+  const isAdmin = useSessionStore((state) => state.isAdmin());
+  const moderate = useDeleteReview(productId);
 
   return (
     <section className="mt-12" aria-labelledby="reviews">
@@ -51,6 +53,18 @@ export function ProductReviews({ productId }: { productId: string }) {
                   <StarRating value={review.rating} />
                   <span className="text-sm font-medium">{review.isMine ? "You" : review.authorName}</span>
                   <span className="text-xs text-muted-foreground">{new Date(review.createdAtUtc).toLocaleDateString()}</span>
+                  {isAdmin && !review.isMine && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="ml-auto"
+                      disabled={moderate.isPending}
+                      onClick={() => moderate.mutate(review.id, { onSuccess: () => toast.success("Review removed"), onError: (error) => toast.error(getApiErrorMessage(error)) })}
+                    >
+                      Remove
+                    </Button>
+                  )}
                 </div>
                 {review.body && <p className="text-sm leading-relaxed whitespace-pre-line">{review.body}</p>}
               </li>
