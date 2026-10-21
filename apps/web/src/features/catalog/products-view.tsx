@@ -24,6 +24,7 @@ const SORT_LABELS: Record<string, string> = {
   "price-asc": "Price: Low to High",
   "price-desc": "Price: High to Low",
   name: "Name",
+  "best-offer": "Best offers",
 };
 
 export function ProductsView() {
@@ -90,6 +91,7 @@ export function ProductsView() {
                 <SelectItem value="newest">Newest</SelectItem>
                 <SelectItem value="price-asc">Price: Low to High</SelectItem>
                 <SelectItem value="price-desc">Price: High to Low</SelectItem>
+                <SelectItem value="best-offer">Best offers</SelectItem>
                 <SelectItem value="name">Name</SelectItem>
               </SelectContent>
             </Select>
