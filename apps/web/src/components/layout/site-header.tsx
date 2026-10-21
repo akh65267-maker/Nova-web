@@ -19,7 +19,7 @@ import { useSessionStore } from "@taskmanager/auth/session-store";
 import { useSessionCurrentUser } from "@taskmanager/auth/use-session";
 import { SearchBox } from "@/features/catalog/search-box";
 import { useLogout } from "@/features/auth/use-logout";
-import { MegaMenu, MobileMenu } from "./mega-menu";
+import { LazyMegaMenu, LazyMobileMenu } from "./lazy-menus";
 
 function ThemeToggle() {
   const { resolvedTheme, setTheme } = useTheme();
@@ -105,13 +105,13 @@ export function SiteHeader() {
     >
       <div aria-hidden className="scroll-progress pointer-events-none absolute inset-x-0 -bottom-px h-0.5 origin-left bg-primary" />
       <div className="mx-auto flex h-16 max-w-7xl items-center gap-4 px-4 sm:px-6 lg:px-8">
-        <MobileMenu />
+        <LazyMobileMenu />
 
         <Link href="/" className="text-lg font-bold tracking-tight">
           Nova Commerce
         </Link>
 
-        <MegaMenu />
+        <LazyMegaMenu />
 
         <div className="ml-auto flex flex-1 items-center justify-end gap-2">
           <SearchBox />

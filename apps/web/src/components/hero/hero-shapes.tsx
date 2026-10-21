@@ -2,10 +2,12 @@
 
 import { useEffect, useRef, useState } from "react";
 
+const SETTLE_MS = 3000;
+
 type NavigatorWithConnection = Navigator & { connection?: { saveData?: boolean } };
 
 // Soft 3D shapes drifting behind the hero. Decoration only: it stays off for reduced motion, data saver,
-// and browsers without WebGL, and it waits until the page is idle so it never competes with the hero's
+// and browsers without WebGL, and it waits until the page has loaded and gone idle so it never competes with the hero's
 // own paint (the heading is the LCP element).
 export function HeroShapes() {
   const canvas = useRef<HTMLCanvasElement>(null);
@@ -33,13 +35,25 @@ export function HeroShapes() {
         });
     };
 
+    // After the page has loaded and settled, then at an idle moment: evaluating three costs the main thread
+    // about a hundred milliseconds, which must not land inside the load the visitor is waiting on.
     const idle = window.requestIdleCallback ?? ((callback: () => void) => window.setTimeout(callback, 600));
     const cancelIdle = window.cancelIdleCallback ?? window.clearTimeout;
-    const handle = idle(start, { timeout: 2000 });
+    let idleHandle: number | undefined;
+    let settleTimer: number | undefined;
+    const schedule = () => {
+      settleTimer = window.setTimeout(() => {
+        idleHandle = idle(start, { timeout: 2000 });
+      }, SETTLE_MS);
+    };
+    if (document.readyState === "complete") schedule();
+    else window.addEventListener("load", schedule, { once: true });
 
     return () => {
       cancelled = true;
-      cancelIdle(handle);
+      window.removeEventListener("load", schedule);
+      window.clearTimeout(settleTimer);
+      if (idleHandle !== undefined) cancelIdle(idleHandle);
       stop?.();
     };
   }, []);

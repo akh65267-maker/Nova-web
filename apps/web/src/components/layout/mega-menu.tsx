@@ -30,66 +30,73 @@ function useMenuData() {
   return { categories, brands: brands.slice(0, BRANDS_SHOWN) };
 }
 
-// The desktop navigation: Shop opens one wide panel (categories, brands, featured), the rest are plain links.
-export function MegaMenu() {
+// The panel mounts when Shop is first opened, so the categories and brands are not fetched on every page load.
+function ShopPanel() {
   const { categories, brands } = useMenuData();
 
   return (
-    <NavigationMenu className="hidden md:flex" aria-label="Main">
+    <div className="grid w-[min(52rem,92vw)] grid-cols-[1.2fr_1fr_1fr] gap-8 p-6">
+      <section aria-labelledby="menu-categories">
+        <h3 id="menu-categories" className="mb-3 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+          Shop by category
+        </h3>
+        <ul className="grid gap-0.5">
+          {categories.map((category) => (
+            <li key={category.id}>
+              <NavigationMenuLink render={<Link href={{ pathname: "/products", query: { category: category.name } }} />} className="justify-between text-base">
+                {category.name}
+                <span className="text-xs tabular-nums text-muted-foreground">{category.productCount}</span>
+              </NavigationMenuLink>
+            </li>
+          ))}
+          <li>
+            <NavigationMenuLink render={<Link href="/products" />} className="text-muted-foreground">
+              All products <ArrowRight />
+            </NavigationMenuLink>
+          </li>
+        </ul>
+      </section>
+
+      <section aria-labelledby="menu-brands">
+        <h3 id="menu-brands" className="mb-3 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+          Brands
+        </h3>
+        <ul className="grid gap-0.5">
+          {brands.map((brand) => (
+            <li key={brand.name}>
+              <NavigationMenuLink render={<Link href={{ pathname: "/products", query: { brand: brand.name } }} />}>{brand.name}</NavigationMenuLink>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      <section aria-labelledby="menu-featured" className="flex flex-col gap-2">
+        <h3 id="menu-featured" className="mb-1 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+          Featured
+        </h3>
+        {FEATURED.map(({ href, label, hint, icon: Icon }) => (
+          <NavigationMenuLink key={href} render={<Link href={href} />} className="items-start gap-3 rounded-xl bg-muted/50 p-3">
+            <Icon className="mt-0.5 shrink-0" />
+            <span className="flex flex-col">
+              <span className="font-medium">{label}</span>
+              <span className="text-xs text-muted-foreground">{hint}</span>
+            </span>
+          </NavigationMenuLink>
+        ))}
+      </section>
+    </div>
+  );
+}
+
+// The desktop navigation: Shop opens one wide panel (categories, brands, featured), the rest are plain links.
+export function MegaMenu({ defaultOpen = false }: { defaultOpen?: boolean }) {
+  return (
+    <NavigationMenu className="hidden md:flex" aria-label="Main" defaultValue={defaultOpen ? "shop" : null}>
       <NavigationMenuList className="gap-1">
-        <NavigationMenuItem>
+        <NavigationMenuItem value="shop">
           <NavigationMenuTrigger>Shop</NavigationMenuTrigger>
           <NavigationMenuContent>
-            <div className="grid w-[min(52rem,92vw)] grid-cols-[1.2fr_1fr_1fr] gap-8 p-6">
-              <section aria-labelledby="menu-categories">
-                <h3 id="menu-categories" className="mb-3 text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                  Shop by category
-                </h3>
-                <ul className="grid gap-0.5">
-                  {categories.map((category) => (
-                    <li key={category.id}>
-                      <NavigationMenuLink render={<Link href={{ pathname: "/products", query: { category: category.name } }} />} className="justify-between text-base">
-                        {category.name}
-                        <span className="text-xs tabular-nums text-muted-foreground">{category.productCount}</span>
-                      </NavigationMenuLink>
-                    </li>
-                  ))}
-                  <li>
-                    <NavigationMenuLink render={<Link href="/products" />} className="text-muted-foreground">
-                      All products <ArrowRight />
-                    </NavigationMenuLink>
-                  </li>
-                </ul>
-              </section>
-
-              <section aria-labelledby="menu-brands">
-                <h3 id="menu-brands" className="mb-3 text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                  Brands
-                </h3>
-                <ul className="grid gap-0.5">
-                  {brands.map((brand) => (
-                    <li key={brand.name}>
-                      <NavigationMenuLink render={<Link href={{ pathname: "/products", query: { brand: brand.name } }} />}>{brand.name}</NavigationMenuLink>
-                    </li>
-                  ))}
-                </ul>
-              </section>
-
-              <section aria-labelledby="menu-featured" className="flex flex-col gap-2">
-                <h3 id="menu-featured" className="mb-1 text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                  Featured
-                </h3>
-                {FEATURED.map(({ href, label, hint, icon: Icon }) => (
-                  <NavigationMenuLink key={href} render={<Link href={href} />} className="items-start gap-3 rounded-xl bg-muted/50 p-3">
-                    <Icon className="mt-0.5 shrink-0" />
-                    <span className="flex flex-col">
-                      <span className="font-medium">{label}</span>
-                      <span className="text-xs text-muted-foreground">{hint}</span>
-                    </span>
-                  </NavigationMenuLink>
-                ))}
-              </section>
-            </div>
+            <ShopPanel />
           </NavigationMenuContent>
         </NavigationMenuItem>
 
@@ -108,10 +115,28 @@ export function MegaMenu() {
   );
 }
 
-// Below md there is no room for the panel: the same links open as a side sheet.
-export function MobileMenu() {
-  const [open, setOpen] = useState(false);
+function MobileCategories({ onNavigate }: { onNavigate: () => void }) {
   const { categories } = useMenuData();
+
+  return (
+    <div>
+      <h3 className="mb-2 px-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">Categories</h3>
+      <ul className="grid gap-1">
+        {categories.map((category) => (
+          <li key={category.id}>
+            <Link href={{ pathname: "/products", query: { category: category.name } }} onClick={onNavigate} className="block rounded-lg px-2 py-2 hover:bg-muted">
+              {category.name}
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+// Below md there is no room for the panel: the same links open as a side sheet.
+export function MobileMenu({ defaultOpen = false }: { defaultOpen?: boolean }) {
+  const [open, setOpen] = useState(defaultOpen);
   const close = () => setOpen(false);
 
   return (
@@ -143,18 +168,7 @@ export function MobileMenu() {
               </li>
             ))}
           </ul>
-          <div>
-            <h3 className="mb-2 px-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">Categories</h3>
-            <ul className="grid gap-1">
-              {categories.map((category) => (
-                <li key={category.id}>
-                  <Link href={{ pathname: "/products", query: { category: category.name } }} onClick={close} className="block rounded-lg px-2 py-2 hover:bg-muted">
-                    {category.name}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
+          <MobileCategories onNavigate={close} />
         </nav>
       </SheetContent>
     </Sheet>
