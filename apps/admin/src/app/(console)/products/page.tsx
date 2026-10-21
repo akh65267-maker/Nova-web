@@ -34,7 +34,7 @@ import {
 } from "@taskmanager/api/use-products";
 import type { ProductDto } from "@taskmanager/api/catalog-api";
 import { useCreateInventory, useInventoryList, useRestockInventory } from "@taskmanager/api/use-inventory";
-import { CATEGORIES } from "@taskmanager/api/categories";
+import { useCategories } from "@taskmanager/api/use-categories";
 import { ErrorMessage } from "@taskmanager/ui/components/error-message";
 import { ErrorState } from "@taskmanager/ui/components/error-state";
 import { getApiErrorMessage } from "@taskmanager/api/errors";
@@ -44,9 +44,12 @@ function NewProductDialog() {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState("");
-  const [category, setCategory] = useState<string>(CATEGORIES[0]);
+  const [category, setCategory] = useState("");
   const [stock, setStock] = useState("0");
 
+  const { data: categoryList = [] } = useCategories();
+  // Until one is chosen, the first category is the one the form shows.
+  const selectedCategory = category || categoryList[0]?.name || "";
   const createProduct = useCreateProduct();
   const createInventory = useCreateInventory();
 
@@ -56,7 +59,7 @@ function NewProductDialog() {
     setName("");
     setDescription("");
     setPrice("");
-    setCategory(CATEGORIES[0]);
+    setCategory("");
     setStock("0");
   }
 
@@ -64,7 +67,7 @@ function NewProductDialog() {
     e.preventDefault();
 
     createProduct.mutate(
-      { name, description, price: Number(price), category },
+      { name, description, price: Number(price), category: selectedCategory },
       {
         onSuccess: ({ id }) => {
           createInventory.mutate(
@@ -133,14 +136,14 @@ function NewProductDialog() {
 
           <div className="flex flex-col gap-1.5">
             <Label>Category</Label>
-            <Select value={category} onValueChange={(value) => setCategory(value ?? CATEGORIES[0])}>
+            <Select value={selectedCategory} onValueChange={(value) => setCategory(value ?? "")}>
               <SelectTrigger className="w-full">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {CATEGORIES.map((c) => (
-                  <SelectItem key={c} value={c}>
-                    {c}
+                {categoryList.map((c) => (
+                  <SelectItem key={c.id} value={c.name}>
+                    {c.name}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -175,7 +178,9 @@ function EditProductDialog({ product }: { product: ProductDto }) {
 
   const update = useUpdateProduct();
   // A product saved with a category outside the list (a typo) still shows its own value.
-  const categories = CATEGORIES.includes(category as never) ? [...CATEGORIES] : [category, ...CATEGORIES];
+  const { data: categoryList = [] } = useCategories();
+  const names = categoryList.map((c) => c.name);
+  const categories = names.includes(category) ? names : [category, ...names];
 
   function handleOpenChange(next: boolean) {
     if (next) {

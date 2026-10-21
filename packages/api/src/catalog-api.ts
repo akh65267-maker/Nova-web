@@ -73,3 +73,31 @@ export async function uploadProductImage(id: string, file: Blob): Promise<{ imag
 export async function deleteProductImage(id: string): Promise<void> {
   await apiClient.delete(`/products/${id}/image`);
 }
+
+export type CategoryDto = {
+  id: string;
+  name: string;
+  /** Products on sale in it (archived ones are not counted). */
+  productCount: number;
+};
+
+export async function listCategories(): Promise<CategoryDto[]> {
+  const { data } = await apiClient.get<CategoryDto[]>("/categories");
+  return data;
+}
+
+/** Admin only. */
+export async function createCategory(name: string): Promise<CategoryDto> {
+  const { data } = await apiClient.post<CategoryDto>("/categories", { name });
+  return data;
+}
+
+/** Admin only. The category's products follow the new name. */
+export async function renameCategory(id: string, name: string): Promise<void> {
+  await apiClient.put(`/categories/${id}`, { name });
+}
+
+/** Admin only. Refused (409) while the category still has products. */
+export async function deleteCategory(id: string): Promise<void> {
+  await apiClient.delete(`/categories/${id}`);
+}
