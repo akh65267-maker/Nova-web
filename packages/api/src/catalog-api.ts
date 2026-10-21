@@ -8,6 +8,8 @@ export type ProductDto = {
   category: string;
   /** Where the picture is (the URL carries its version), or null when the product has none. */
   imageUrl: string | null;
+  /** Off sale. Only the admin console is ever sent an archived product. */
+  isArchived: boolean;
 };
 
 export type ProductListResult = {
@@ -25,6 +27,8 @@ export type ProductListParams = {
   sort?: "newest" | "price-asc" | "price-desc" | "name";
   page?: number;
   pageSize?: number;
+  /** Admin only: also list archived products (ignored for anyone else). */
+  includeArchived?: boolean;
 };
 
 export async function listProducts(params: ProductListParams): Promise<ProductListResult> {
@@ -50,6 +54,15 @@ export async function createProduct(request: CreateProductRequest): Promise<{ id
 }
 
 /** Admin only. The body is the picture itself (JPEG, PNG or WebP, at most 2 MB), not a form. */
+export async function updateProduct(id: string, request: CreateProductRequest): Promise<void> {
+  await apiClient.put(`/products/${id}`, request);
+}
+
+/** Admin only. Archiving takes a product off sale without deleting it (orders still refer to it). */
+export async function setProductArchived(id: string, archived: boolean): Promise<void> {
+  await apiClient.post(`/products/${id}/${archived ? "archive" : "restore"}`);
+}
+
 export async function uploadProductImage(id: string, file: Blob): Promise<{ imageUrl: string }> {
   const { data } = await apiClient.put<{ imageUrl: string }>(`/products/${id}/image`, file, {
     headers: { "Content-Type": file.type },

@@ -4,6 +4,8 @@ import {
   deleteProductImage,
   getProduct,
   listProducts,
+  setProductArchived,
+  updateProduct,
   uploadProductImage,
   type CreateProductRequest,
   type ProductListParams,
@@ -32,6 +34,30 @@ export function useCreateProduct() {
     mutationFn: (request: CreateProductRequest) => createProduct(request),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["products"] });
+    },
+  });
+}
+
+export function useUpdateProduct() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, ...request }: CreateProductRequest & { id: string }) => updateProduct(id, request),
+    onSuccess: (_result, { id }) => {
+      queryClient.invalidateQueries({ queryKey: ["products"] });
+      queryClient.invalidateQueries({ queryKey: ["product", id] });
+    },
+  });
+}
+
+export function useSetProductArchived() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, archived }: { id: string; archived: boolean }) => setProductArchived(id, archived),
+    onSuccess: (_result, { id }) => {
+      queryClient.invalidateQueries({ queryKey: ["products"] });
+      queryClient.invalidateQueries({ queryKey: ["product", id] });
     },
   });
 }

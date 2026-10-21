@@ -24,7 +24,14 @@ import {
 } from "@taskmanager/ui/components/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@taskmanager/ui/components/table";
 import { Skeleton } from "@taskmanager/ui/components/skeleton";
-import { useProducts, useCreateProduct, useDeleteProductImage, useUploadProductImage } from "@taskmanager/api/use-products";
+import {
+  useProducts,
+  useCreateProduct,
+  useDeleteProductImage,
+  useSetProductArchived,
+  useUpdateProduct,
+  useUploadProductImage,
+} from "@taskmanager/api/use-products";
 import type { ProductDto } from "@taskmanager/api/catalog-api";
 import { useCreateInventory, useInventoryList, useRestockInventory } from "@taskmanager/api/use-inventory";
 import { CATEGORIES } from "@taskmanager/api/categories";
@@ -159,6 +166,121 @@ function NewProductDialog() {
   );
 }
 
+function EditProductDialog({ product }: { product: ProductDto }) {
+  const [open, setOpen] = useState(false);
+  const [name, setName] = useState(product.name);
+  const [description, setDescription] = useState(product.description);
+  const [price, setPrice] = useState(String(product.price));
+  const [category, setCategory] = useState(product.category);
+
+  const update = useUpdateProduct();
+  // A product saved with a category outside the list (a typo) still shows its own value.
+  const categories = CATEGORIES.includes(category as never) ? [...CATEGORIES] : [category, ...CATEGORIES];
+
+  function handleOpenChange(next: boolean) {
+    if (next) {
+      setName(product.name);
+      setDescription(product.description);
+      setPrice(String(product.price));
+      setCategory(product.category);
+      update.reset();
+    }
+    setOpen(next);
+  }
+
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+
+    update.mutate(
+      { id: product.id, name, description, price: Number(price), category },
+      {
+        onSuccess: () => {
+          toast.success(`${name} updated`);
+          setOpen(false);
+        },
+      },
+    );
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={handleOpenChange}>
+      <DialogTrigger render={<Button size="sm" variant="outline" aria-label={`Edit ${product.name}`}>Edit</Button>} />
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Edit product</DialogTitle>
+        </DialogHeader>
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor={`edit-name-${product.id}`}>Name</Label>
+            <Input id={`edit-name-${product.id}`} required value={name} onChange={(e) => setName(e.target.value)} />
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor={`edit-description-${product.id}`}>Description</Label>
+            <Input id={`edit-description-${product.id}`} value={description} onChange={(e) => setDescription(e.target.value)} />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor={`edit-price-${product.id}`}>Price</Label>
+              <Input id={`edit-price-${product.id}`} type="number" min="0" step="0.01" required value={price} onChange={(e) => setPrice(e.target.value)} />
+            </div>
+
+            <div className="flex flex-col gap-1.5">
+              <Label>Category</Label>
+              <Select value={category} onValueChange={(value) => setCategory(value ?? product.category)}>
+                <SelectTrigger className="w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {categories.map((c) => (
+                    <SelectItem key={c} value={c}>
+                      {c}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          {update.isError && <ErrorMessage>{getApiErrorMessage(update.error)}</ErrorMessage>}
+
+          <DialogFooter>
+            <Button type="submit" disabled={update.isPending}>
+              {update.isPending ? "Saving..." : "Save changes"}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function ArchiveControl({ product }: { product: ProductDto }) {
+  const setArchived = useSetProductArchived();
+  const archiving = !product.isArchived;
+
+  return (
+    <Button
+      size="sm"
+      variant="ghost"
+      disabled={setArchived.isPending}
+      aria-label={`${archiving ? "Archive" : "Restore"} ${product.name}`}
+      onClick={() =>
+        setArchived.mutate(
+          { id: product.id, archived: archiving },
+          {
+            onSuccess: () => toast.success(archiving ? `${product.name} archived: it is off sale` : `${product.name} is on sale again`),
+            onError: (error) => toast.error(getApiErrorMessage(error)),
+          },
+        )
+      }
+    >
+      {archiving ? "Archive" : "Restore"}
+    </Button>
+  );
+}
+
 function RestockControl({ productId }: { productId: string }) {
   const [amount, setAmount] = useState("10");
   const restock = useRestockInventory();
@@ -264,7 +386,7 @@ export default function AdminProductsPage() {
     isError: isProductsError,
     error: productsError,
     refetch: refetchProducts,
-  } = useProducts({ pageSize: 100 });
+  } = useProducts({ pageSize: 100, includeArchived: true });
   const { data: inventory } = useInventoryList();
 
   const stockByProductId = new Map(inventory?.map((i) => [i.productId, i.quantityAvailable]));
@@ -293,12 +415,16 @@ export default function AdminProductsPage() {
               <TableHead>Category</TableHead>
               <TableHead>Price</TableHead>
               <TableHead>Stock</TableHead>
+              <TableHead>Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {productsResult?.items.map((product) => (
-              <TableRow key={product.id}>
-                <TableCell className="font-medium">{product.name}</TableCell>
+              <TableRow key={product.id} className={product.isArchived ? "opacity-60" : undefined}>
+                <TableCell className="font-medium">
+                  {product.name}
+                  {product.isArchived && <span className="ml-2 text-xs font-normal text-muted-foreground">Archived</span>}
+                </TableCell>
                 <TableCell>
                   <PictureControl product={product} />
                 </TableCell>
@@ -310,6 +436,12 @@ export default function AdminProductsPage() {
                       {stockByProductId.get(product.id) ?? 0}
                     </span>
                     <RestockControl productId={product.id} />
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <div className="flex items-center gap-1">
+                    <EditProductDialog product={product} />
+                    <ArchiveControl product={product} />
                   </div>
                 </TableCell>
               </TableRow>
