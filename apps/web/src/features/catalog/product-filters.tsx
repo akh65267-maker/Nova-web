@@ -4,8 +4,7 @@ import { Checkbox } from "@taskmanager/ui/components/checkbox";
 import { Slider } from "@taskmanager/ui/components/slider";
 import { Button } from "@taskmanager/ui/components/button";
 import { CATEGORIES } from "@taskmanager/api/categories";
-
-export const MAX_PRICE = 200;
+import { MAX_PRICE } from "./list-params";
 
 export type FilterState = {
   category: string | null;

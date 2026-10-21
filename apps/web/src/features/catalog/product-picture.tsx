@@ -25,5 +25,5 @@ export function ProductPicture({
 
   // unoptimized: the picture is served as uploaded, with its own caching; the image optimizer
   // would need to be told which sources it may fetch.
-  return <Image src={product.imageUrl} alt={alt ?? product.name} fill sizes={sizes} priority={priority} unoptimized className={cn("object-cover", className)} />;
+  return <Image src={product.imageUrl} alt={alt ?? product.name} fill sizes={sizes} priority={priority} fetchPriority={priority ? "high" : undefined} unoptimized className={cn("object-cover", className)} />;
 }

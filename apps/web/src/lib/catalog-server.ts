@@ -1,0 +1,16 @@
+import type { ProductListParams, ProductListResult } from "@taskmanager/api/catalog-api";
+import { gatewayUrl } from "@/lib/session-server";
+
+/** The public product list, read from the gateway on the server. Null when it cannot be read (the browser then asks for itself). */
+export async function fetchProducts(params: ProductListParams): Promise<ProductListResult | null> {
+  const query = new URLSearchParams();
+  for (const [key, value] of Object.entries(params)) {
+    if (value !== undefined) query.set(key, String(value));
+  }
+  try {
+    const response = await fetch(`${gatewayUrl}/products?${query}`, { cache: "no-store", signal: AbortSignal.timeout(3000) });
+    return response.ok ? ((await response.json()) as ProductListResult) : null;
+  } catch {
+    return null;
+  }
+}
