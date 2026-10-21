@@ -355,7 +355,21 @@ function PictureControl({ product }: { product: ProductDto }) {
   return (
     <div className="flex items-center gap-3">
       {product.imageUrl ? (
-        <Image src={product.imageUrl} alt={`Picture of ${product.name}`} width={40} height={40} unoptimized className="size-10 rounded-md object-cover ring-1 ring-foreground/10" />
+        <Dialog>
+          <DialogTrigger
+            render={
+              <button type="button" className="size-10 shrink-0 cursor-zoom-in rounded-md focus-visible:ring-2 focus-visible:ring-ring">
+                <Image src={product.imageUrl} alt={`Picture of ${product.name}`} width={40} height={40} unoptimized className="size-10 rounded-md object-cover ring-1 ring-foreground/10" />
+              </button>
+            }
+          />
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>{product.name}</DialogTitle>
+            </DialogHeader>
+            <Image src={product.imageUrl} alt={`Picture of ${product.name}`} width={640} height={640} unoptimized className="h-auto max-h-[70vh] w-full rounded-md object-contain" />
+          </DialogContent>
+        </Dialog>
       ) : (
         <span className="flex size-10 items-center justify-center rounded-md bg-muted text-xs text-muted-foreground">None</span>
       )}
