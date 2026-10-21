@@ -1,5 +1,8 @@
 import { expect, test, type APIRequestContext, type Page } from "@playwright/test";
 
+// The header's cart button: its name is Cart, with the count in front once the cart has items.
+const CART_BUTTON = /^(\d+ )?Cart$/;
+
 const apiURL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
 type Product = { id: string; name: string; price: number };
@@ -86,7 +89,7 @@ test("a signed-in cart follows the customer to another browser", async ({ page, 
     await second.getByRole("main").getByRole("button", { name: "Sign in" }).click();
     await expect(second).not.toHaveURL(/\/login/);
 
-    await second.getByRole("button", { name: /^Cart\b/ }).click();
+    await second.getByRole("button", { name: CART_BUTTON }).click();
     await expect(second.getByText(product!.name).first()).toBeVisible();
   } finally {
     await other.close();

@@ -2,6 +2,9 @@ import { expect, test, type APIRequestContext } from "@playwright/test";
 
 // Same resolution as src/lib/api-client.ts, so the test checks the gateway the
 // app is actually configured to call rather than one it assumes.
+// The header's cart button: its name is Cart, with the count in front once the cart has items.
+const CART_BUTTON = /^(\d+ )?Cart$/;
+
 const apiURL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
 // Exact stock is for administrators only. The tests that need it read it with the administrator
@@ -123,7 +126,7 @@ test("signing out empties the cart", async ({ page, request }) => {
   await page.getByRole("button", { name: "Add to cart" }).click();
 
   // The cart really holds it before signing out.
-  await page.getByRole("button", { name: /^Cart\b/ }).click();
+  await page.getByRole("button", { name: CART_BUTTON }).click();
   await expect(page.getByRole("dialog").getByText(product.name)).toBeVisible();
   await page.keyboard.press("Escape");
 
@@ -132,12 +135,12 @@ test("signing out empties the cart", async ({ page, request }) => {
   // The session is in cookies now: signing out must clear them.
   await expect.poll(async () => (await page.context().cookies()).filter((c) => c.name.startsWith("tm_shop_")).length).toBe(0);
 
-  await page.getByRole("button", { name: /^Cart\b/ }).click();
+  await page.getByRole("button", { name: CART_BUTTON }).click();
   await expect(page.getByText("Your cart is empty")).toBeVisible();
 
   // And it stays empty: nothing is left in storage for a reload to bring back.
   await page.reload();
-  await page.getByRole("button", { name: /^Cart\b/ }).click();
+  await page.getByRole("button", { name: CART_BUTTON }).click();
   await expect(page.getByText("Your cart is empty")).toBeVisible();
 });
 
