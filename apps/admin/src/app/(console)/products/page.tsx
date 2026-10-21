@@ -358,7 +358,7 @@ function PictureControl({ product }: { product: ProductDto }) {
         <Dialog>
           <DialogTrigger
             render={
-              <button type="button" className="cursor-zoom-in rounded-md focus-visible:ring-2 focus-visible:ring-ring">
+              <button type="button" className="size-10 shrink-0 cursor-zoom-in rounded-md focus-visible:ring-2 focus-visible:ring-ring">
                 <Image src={product.imageUrl} alt={`Picture of ${product.name}`} width={40} height={40} unoptimized className="size-10 rounded-md object-cover ring-1 ring-foreground/10" />
               </button>
             }
