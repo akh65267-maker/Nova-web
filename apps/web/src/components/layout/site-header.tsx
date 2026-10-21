@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ShoppingCart, User, Sun, Moon } from "lucide-react";
 import { useTheme } from "next-themes";
@@ -18,6 +19,7 @@ import { useSessionStore } from "@taskmanager/auth/session-store";
 import { useSessionCurrentUser } from "@taskmanager/auth/use-session";
 import { SearchBox } from "@/features/catalog/search-box";
 import { useLogout } from "@/features/auth/use-logout";
+import { LazyMegaMenu, LazyMobileMenu } from "./lazy-menus";
 
 function ThemeToggle() {
   const { resolvedTheme, setTheme } = useTheme();
@@ -80,27 +82,36 @@ function AccountMenu() {
   );
 }
 
+// The header is see-through at the top of the page and gains its edge once content scrolls under it.
+function useScrolled() {
+  const [scrolled, setScrolled] = useState(false);
+  useEffect(() => {
+    const update = () => setScrolled(window.scrollY > 8);
+    update();
+    window.addEventListener("scroll", update, { passive: true });
+    return () => window.removeEventListener("scroll", update);
+  }, []);
+  return scrolled;
+}
+
 export function SiteHeader() {
+  const scrolled = useScrolled();
   const cartCount = useCartCount();
   const setCartOpen = useCartStore((state) => state.setOpen);
   return (
-    <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <header
+      data-scrolled={scrolled}
+      className="sticky top-0 z-50 border-b border-transparent bg-background/70 backdrop-blur-xl backdrop-saturate-150 transition-[border-color,background-color] duration-300 data-[scrolled=true]:border-border data-[scrolled=true]:bg-background/85"
+    >
+      <div aria-hidden className="scroll-progress pointer-events-none absolute inset-x-0 -bottom-px h-0.5 origin-left bg-primary" />
       <div className="mx-auto flex h-16 max-w-7xl items-center gap-4 px-4 sm:px-6 lg:px-8">
+        <LazyMobileMenu />
+
         <Link href="/" className="text-lg font-bold tracking-tight">
           Nova Commerce
         </Link>
 
-        <nav className="hidden items-center gap-6 text-sm font-medium md:flex">
-          <Link href="/products" className="text-muted-foreground hover:text-foreground">
-            All Products
-          </Link>
-          <Link
-            href={{ pathname: "/products", query: { sort: "newest" } }}
-            className="text-muted-foreground hover:text-foreground"
-          >
-            New Arrivals
-          </Link>
-        </nav>
+        <LazyMegaMenu />
 
         <div className="ml-auto flex flex-1 items-center justify-end gap-2">
           <SearchBox />

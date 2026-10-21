@@ -5,6 +5,7 @@ import { Card, CardContent } from "@taskmanager/ui/components/card";
 import { fetchCategories } from "@/lib/catalog-server";
 import { BestOffers, NewArrivals, TopSelling } from "@/features/catalog/product-row";
 import { ProductIllustration } from "@/features/catalog/product-illustration";
+import { HeroShapes } from "@/components/hero/hero-shapes";
 import { cn } from "@/lib/utils";
 
 export default async function Home() {
@@ -20,6 +21,8 @@ export default async function Home() {
           className="pointer-events-none absolute inset-0 bg-gradient-to-br from-background via-background to-muted/50"
           aria-hidden
         />
+
+        <HeroShapes />
 
         <div className="relative mx-auto flex max-w-7xl items-center gap-12 px-4 py-20 sm:px-6 sm:py-28 lg:px-8">
           {/* ── Left: text content ──────────────────── */}
@@ -129,10 +132,12 @@ export default async function Home() {
             Shop by category
           </h2>
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-            {categories.map(({ id, name: category }) => (
+            {categories.map(({ id, name: category }, i) => (
               <Link
                 key={id}
                 href={{ pathname: "/products", query: { category } }}
+                style={{ "--i": i } as CSSProperties}
+                className="reveal-item"
               >
                 <Card className="group gap-0 overflow-hidden py-0 transition-shadow hover:shadow-md">
                   <div className="aspect-[4/3] overflow-hidden">
