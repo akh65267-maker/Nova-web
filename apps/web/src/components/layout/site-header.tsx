@@ -1,12 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
-import { ShoppingCart, Search, User, Sun, Moon } from "lucide-react";
+import { ShoppingCart, User, Sun, Moon } from "lucide-react";
 import { useTheme } from "next-themes";
 import { Button } from "@taskmanager/ui/components/button";
-import { Input } from "@taskmanager/ui/components/input";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -19,6 +16,7 @@ import {
 import { useCartCount, useCartStore } from "@/store/cart-store";
 import { useSessionStore } from "@taskmanager/auth/session-store";
 import { useSessionCurrentUser } from "@taskmanager/auth/use-session";
+import { SearchBox } from "@/features/catalog/search-box";
 import { useLogout } from "@/features/auth/use-logout";
 
 function ThemeToggle() {
@@ -85,15 +83,6 @@ function AccountMenu() {
 export function SiteHeader() {
   const cartCount = useCartCount();
   const setCartOpen = useCartStore((state) => state.setOpen);
-  const router = useRouter();
-  const [searchTerm, setSearchTerm] = useState("");
-
-  function handleSearchSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    const trimmed = searchTerm.trim();
-    router.push(trimmed ? `/products?search=${encodeURIComponent(trimmed)}` : "/products");
-  }
-
   return (
     <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="mx-auto flex h-16 max-w-7xl items-center gap-4 px-4 sm:px-6 lg:px-8">
@@ -114,15 +103,7 @@ export function SiteHeader() {
         </nav>
 
         <div className="ml-auto flex flex-1 items-center justify-end gap-2">
-          <form onSubmit={handleSearchSubmit} className="relative hidden max-w-sm flex-1 sm:block">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Search products..."
-              className="pl-8"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-          </form>
+          <SearchBox />
 
           <ThemeToggle />
 
