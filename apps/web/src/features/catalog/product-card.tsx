@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import type { ProductDto } from "@taskmanager/api/catalog-api";
 import { useInventory } from "@taskmanager/api/use-inventory";
 import { ProductPicture } from "./product-picture";
+import { ProductPrice } from "./product-price";
 
 export function ProductCard({ product, priority }: { product: ProductDto; priority?: boolean }) {
   const addItem = useCartStore((state) => state.addItem);
@@ -49,9 +50,7 @@ export function ProductCard({ product, priority }: { product: ProductDto; priori
           {product.name}
         </Link>
         <p className="line-clamp-2 text-sm text-muted-foreground">{product.description}</p>
-        <p className="mt-auto pt-2 text-lg font-semibold tabular-nums">
-          ${product.price.toFixed(2)}
-        </p>
+        <ProductPrice product={product} className="mt-auto pt-2 text-lg" />
       </CardContent>
       <CardFooter className="border-t-0 bg-transparent px-4 pt-0 pb-4">
         <Button

@@ -9,7 +9,14 @@ export type ProductDto = {
   id: string;
   name: string;
   description: string;
+  /** What the customer pays now: the list price less an active discount. */
   price: number;
+  /** The price before any discount; this is the one an admin edits. */
+  listPrice: number;
+  /** How much cheaper the product is now, rounded; null when no discount is active. */
+  discountPercent: number | null;
+  /** When the active discount ends, or null when it has no end (or none is active). */
+  discountEndsAtUtc: string | null;
   category: string;
   /** Optional. */
   brand: string | null;
@@ -35,6 +42,8 @@ export type ProductListParams = {
   brand?: string;
   minPrice?: number;
   maxPrice?: number;
+  /** Only products with an active discount. */
+  onSale?: boolean;
   search?: string;
   sort?: "newest" | "price-asc" | "price-desc" | "name";
   page?: number;
@@ -78,6 +87,31 @@ export async function updateProduct(id: string, request: CreateProductRequest): 
 export async function listRelatedProducts(id: string): Promise<ProductDto[]> {
   const { data } = await apiClient.get<ProductDto[]>(`/products/${id}/related`);
   return data;
+}
+
+export type DiscountDto = {
+  kind: "Percent" | "Fixed";
+  value: number;
+  /** Null: starts at once. */
+  startsAtUtc: string | null;
+  /** Null: never ends. */
+  endsAtUtc: string | null;
+};
+
+/** Admin only. The discount as set (active or not), or null when the product has none. */
+export async function getDiscount(id: string): Promise<DiscountDto | null> {
+  const { data, status } = await apiClient.get<DiscountDto>(`/products/${id}/discount`);
+  return status === 204 ? null : data;
+}
+
+/** Admin only. Replaces the product's discount; refused (400) when it is not valid. */
+export async function setDiscount(id: string, discount: DiscountDto): Promise<void> {
+  await apiClient.put(`/products/${id}/discount`, discount);
+}
+
+/** Admin only. */
+export async function clearDiscount(id: string): Promise<void> {
+  await apiClient.delete(`/products/${id}/discount`);
 }
 
 /** Admin only. Archiving takes a product off sale without deleting it (orders still refer to it). */

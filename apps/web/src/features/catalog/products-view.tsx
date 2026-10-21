@@ -63,6 +63,7 @@ export function ProductsView() {
                 brand: next.brand !== undefined ? next.brand : filters.brand,
                 minPrice: next.minPrice !== undefined ? next.minPrice : filters.minPrice,
                 maxPrice: next.maxPrice !== undefined ? next.maxPrice : filters.maxPrice,
+                onSale: (next.onSale !== undefined ? next.onSale : filters.onSale) ? "true" : null,
                 search: next.search !== undefined ? next.search : filters.search,
               });
             }}

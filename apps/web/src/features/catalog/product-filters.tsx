@@ -12,6 +12,7 @@ export type FilterState = {
   brand: string | null;
   minPrice: number;
   maxPrice: number;
+  onSale: boolean;
   search: string;
 };
 
@@ -25,7 +26,7 @@ export function ProductFilters({
   const { data: categories = [] } = useCategories();
   const { data: brands = [] } = useBrands();
   const hasActiveFilters =
-    filters.category !== null || filters.brand !== null || filters.minPrice > 0 || filters.maxPrice < MAX_PRICE || filters.search !== "";
+    filters.category !== null || filters.brand !== null || filters.minPrice > 0 || filters.maxPrice < MAX_PRICE || filters.onSale || filters.search !== "";
 
   return (
     <div className="flex flex-col gap-6">
@@ -35,12 +36,17 @@ export function ProductFilters({
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => onChange({ category: null, brand: null, minPrice: 0, maxPrice: MAX_PRICE, search: "" })}
+            onClick={() => onChange({ category: null, brand: null, minPrice: 0, maxPrice: MAX_PRICE, onSale: false, search: "" })}
           >
             Clear all
           </Button>
         )}
       </div>
+
+      <label className="flex items-center gap-2 text-sm font-medium">
+        <Checkbox checked={filters.onSale} onCheckedChange={(checked) => onChange({ onSale: Boolean(checked) })} />
+        On sale
+      </label>
 
       <div>
         <h3 className="mb-3 text-sm font-medium">Category</h3>

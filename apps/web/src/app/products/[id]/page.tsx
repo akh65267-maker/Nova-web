@@ -11,6 +11,7 @@ import { useProduct } from "@taskmanager/api/use-products";
 import { useInventory } from "@taskmanager/api/use-inventory";
 import { MAX_PER_ORDER, useCartStore } from "@/store/cart-store";
 import { ProductGallery } from "@/features/catalog/product-gallery";
+import { ProductPrice } from "@/features/catalog/product-price";
 import { RelatedProducts } from "@/features/catalog/related-products";
 import { cn } from "@/lib/utils";
 
@@ -96,7 +97,10 @@ export default function ProductDetailPage(props: PageProps<"/products/[id]">) {
             {product.category}
           </Link>
           <h1 className="text-3xl font-bold tracking-tight text-balance">{product.name}</h1>
-          <p className="text-3xl font-semibold tabular-nums">${product.price.toFixed(2)}</p>
+          <ProductPrice product={product} className="text-3xl" />
+          {product.discountEndsAtUtc && (
+            <p className="text-sm text-muted-foreground">Offer ends {new Date(product.discountEndsAtUtc).toLocaleDateString()}</p>
+          )}
           <p className="leading-relaxed text-muted-foreground">{product.description}</p>
 
           {isInventoryLoading ? (

@@ -1,16 +1,20 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
+  clearDiscount,
   createProduct,
   addGalleryImage,
   deleteProductImage,
   removeGalleryImage,
+  getDiscount,
   getProduct,
   listProducts,
   listRelatedProducts,
+  setDiscount,
   setProductArchived,
   updateProduct,
   uploadProductImage,
   type CreateProductRequest,
+  type DiscountDto,
   type ProductListParams,
 } from "./catalog-api";
 
@@ -36,6 +40,43 @@ export function useRelatedProducts(id: string) {
     queryFn: () => listRelatedProducts(id),
     enabled: Boolean(id),
     staleTime: 5 * 60_000,
+  });
+}
+
+export function useDiscount(id: string) {
+  return useQuery({
+    queryKey: ["discount", id],
+    queryFn: () => getDiscount(id),
+  });
+}
+
+// A discount changes the price shown wherever the product is.
+function useRefreshAfterDiscount(id: string) {
+  const queryClient = useQueryClient();
+
+  return () => {
+    queryClient.invalidateQueries({ queryKey: ["discount", id] });
+    queryClient.invalidateQueries({ queryKey: ["products"] });
+    queryClient.invalidateQueries({ queryKey: ["product", id] });
+    queryClient.invalidateQueries({ queryKey: ["related"] });
+  };
+}
+
+export function useSetDiscount(id: string) {
+  const refresh = useRefreshAfterDiscount(id);
+
+  return useMutation({
+    mutationFn: (discount: DiscountDto) => setDiscount(id, discount),
+    onSuccess: refresh,
+  });
+}
+
+export function useClearDiscount(id: string) {
+  const refresh = useRefreshAfterDiscount(id);
+
+  return useMutation({
+    mutationFn: () => clearDiscount(id),
+    onSuccess: refresh,
   });
 }
 
