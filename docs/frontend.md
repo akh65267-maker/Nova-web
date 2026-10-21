@@ -337,3 +337,23 @@ stock — acceptable on a local dev stack, not something to point at shared data
 Verified 2026-09-19 against the running Docker stack: the gateway serves the bare
 `GET /products` the catalog page issues, and its CORS policy allows `http://localhost:3100`
 with credentials.
+
+## Web vitals baseline
+
+`WebVitals` (`providers/web-vitals.tsx`, both apps) logs each Core Web Vital to the console in
+development via Next's `useReportWebVitals`. Lab baseline, 2026-10-21: production build of `apps/web`
+on localhost against the Docker stack, Lighthouse 12 (`npx lighthouse@12 <url> --only-categories=performance`,
+desktop preset and default mobile throttling), seeded catalog.
+
+| Page | Device | Score | FCP | LCP | TBT | CLS |
+|---|---|---|---|---|---|---|
+| `/` | desktop | 99 | 0.3 s | 1.0 s | 0 ms | 0 |
+| `/products` | desktop | 90 | 0.3 s | 0.9 s | 0 ms | 0.193 |
+| `/products/[id]` | desktop | 99 | 0.3 s | 0.9 s | 0 ms | 0 |
+| `/` | mobile | 86 | 0.9 s | 4.2 s | 90 ms | 0 |
+| `/products` | mobile | 79 | 0.9 s | 4.5 s | 160 ms | 0.117 |
+| `/products/[id]` | mobile | 85 | 0.9 s | 4.3 s | 80 ms | 0 |
+
+Findings: the LCP element is a product card image rendered with `loading="lazy"` (the first cards
+should be `priority`); `/products` shifts layout (0.19 desktop) when the grid replaces its skeleton.
+Budget for the redesign: mobile LCP < 2.5 s, CLS < 0.1, TBT < 200 ms.
