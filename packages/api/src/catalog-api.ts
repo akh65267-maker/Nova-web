@@ -17,6 +17,9 @@ export type ProductDto = {
   attributes: ProductAttribute[];
   /** Extra pictures beside the main one, in the order they were added. */
   gallery: string[];
+  /** Null while the product has no reviews. */
+  ratingAverage: number | null;
+  ratingCount: number;
   /** Where the picture is (the URL carries its version), or null when the product has none. */
   imageUrl: string | null;
   /** Off sale. Only the admin console is ever sent an archived product. */
@@ -78,6 +81,49 @@ export async function updateProduct(id: string, request: CreateProductRequest): 
 export async function listRelatedProducts(id: string): Promise<ProductDto[]> {
   const { data } = await apiClient.get<ProductDto[]>(`/products/${id}/related`);
   return data;
+}
+
+export type ReviewDto = {
+  id: string;
+  /** Only the first letter of the author's email, then stars. */
+  authorName: string;
+  rating: number;
+  body: string;
+  createdAtUtc: string;
+  isMine: boolean;
+};
+
+export type ProductReviewsDto = {
+  summary: {
+    average: number | null;
+    count: number;
+    /** How many reviews gave 1, 2, 3, 4 and 5 stars, in that order. */
+    breakdown: number[];
+  };
+  /** The newest reviews. */
+  items: ReviewDto[];
+  /** The signed-in caller's own review, when they have written one. */
+  mine: ReviewDto | null;
+};
+
+export async function listReviews(id: string): Promise<ProductReviewsDto> {
+  const { data } = await apiClient.get<ProductReviewsDto>(`/products/${id}/reviews`);
+  return data;
+}
+
+/** Signed in. Writes the caller's review, replacing the one they had. */
+export async function saveReview(id: string, review: { rating: number; body: string }): Promise<void> {
+  await apiClient.put(`/products/${id}/reviews`, review);
+}
+
+/** Signed in. Removes the caller's own review. */
+export async function deleteMyReview(id: string): Promise<void> {
+  await apiClient.delete(`/products/${id}/reviews`);
+}
+
+/** Admin only. Removes anyone's review. */
+export async function deleteReview(id: string, reviewId: string): Promise<void> {
+  await apiClient.delete(`/products/${id}/reviews/${reviewId}`);
 }
 
 /** Admin only. Archiving takes a product off sale without deleting it (orders still refer to it). */
