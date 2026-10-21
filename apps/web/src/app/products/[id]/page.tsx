@@ -82,6 +82,14 @@ export default function ProductDetailPage(props: PageProps<"/products/[id]">) {
         </div>
 
         <div className="flex flex-col gap-4">
+          {product.brand && (
+            <Link
+              href={{ pathname: "/products", query: { brand: product.brand } }}
+              className="w-fit text-sm font-semibold transition-colors hover:text-primary"
+            >
+              {product.brand}
+            </Link>
+          )}
           <Link
             href={{ pathname: "/products", query: { category: product.category } }}
             className="w-fit text-xs font-medium tracking-wide text-muted-foreground uppercase transition-colors hover:text-primary"

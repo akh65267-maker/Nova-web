@@ -11,6 +11,7 @@ export const PAGE_SIZE = 12;
 export function readListState(get: (name: string) => string | null | undefined) {
   const filters = {
     category: get("category") ?? null,
+    brand: get("brand") ?? null,
     minPrice: Number(get("minPrice") ?? 0),
     maxPrice: Number(get("maxPrice") ?? MAX_PRICE),
     search: get("search") ?? "",
@@ -19,6 +20,7 @@ export function readListState(get: (name: string) => string | null | undefined) 
   const page = Number(get("page") ?? 1);
   const params: ProductListParams = {
     category: filters.category ?? undefined,
+    brand: filters.brand ?? undefined,
     minPrice: filters.minPrice > 0 ? filters.minPrice : undefined,
     maxPrice: filters.maxPrice < MAX_PRICE ? filters.maxPrice : undefined,
     search: filters.search || undefined,

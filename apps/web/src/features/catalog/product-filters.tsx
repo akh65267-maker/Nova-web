@@ -3,11 +3,13 @@
 import { Checkbox } from "@taskmanager/ui/components/checkbox";
 import { Slider } from "@taskmanager/ui/components/slider";
 import { Button } from "@taskmanager/ui/components/button";
+import { useBrands } from "@taskmanager/api/use-brands";
 import { useCategories } from "@taskmanager/api/use-categories";
 import { MAX_PRICE } from "./list-params";
 
 export type FilterState = {
   category: string | null;
+  brand: string | null;
   minPrice: number;
   maxPrice: number;
   search: string;
@@ -21,8 +23,9 @@ export function ProductFilters({
   onChange: (next: Partial<FilterState>) => void;
 }) {
   const { data: categories = [] } = useCategories();
+  const { data: brands = [] } = useBrands();
   const hasActiveFilters =
-    filters.category !== null || filters.minPrice > 0 || filters.maxPrice < MAX_PRICE || filters.search !== "";
+    filters.category !== null || filters.brand !== null || filters.minPrice > 0 || filters.maxPrice < MAX_PRICE || filters.search !== "";
 
   return (
     <div className="flex flex-col gap-6">
@@ -32,7 +35,7 @@ export function ProductFilters({
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => onChange({ category: null, minPrice: 0, maxPrice: MAX_PRICE, search: "" })}
+            onClick={() => onChange({ category: null, brand: null, minPrice: 0, maxPrice: MAX_PRICE, search: "" })}
           >
             Clear all
           </Button>
@@ -55,6 +58,20 @@ export function ProductFilters({
           ))}
         </div>
       </div>
+
+      {brands.length > 0 && (
+        <div>
+          <h3 className="mb-3 text-sm font-medium">Brand</h3>
+          <div className="flex flex-col gap-2">
+            {brands.map(({ name }) => (
+              <label key={name} className="flex items-center gap-2 text-sm">
+                <Checkbox checked={filters.brand === name} onCheckedChange={(checked) => onChange({ brand: checked ? name : null })} />
+                {name}
+              </label>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div>
         <h3 className="mb-3 text-sm font-medium">Price range</h3>

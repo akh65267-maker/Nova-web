@@ -60,6 +60,7 @@ export function ProductsView() {
             onChange={(next) => {
               updateParams({
                 category: next.category !== undefined ? next.category : filters.category,
+                brand: next.brand !== undefined ? next.brand : filters.brand,
                 minPrice: next.minPrice !== undefined ? next.minPrice : filters.minPrice,
                 maxPrice: next.maxPrice !== undefined ? next.maxPrice : filters.maxPrice,
                 search: next.search !== undefined ? next.search : filters.search,
