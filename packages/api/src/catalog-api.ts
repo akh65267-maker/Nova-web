@@ -1,5 +1,10 @@
 import { apiClient } from "./client";
 
+export type ProductAttribute = {
+  name: string;
+  value: string;
+};
+
 export type ProductDto = {
   id: string;
   name: string;
@@ -8,6 +13,8 @@ export type ProductDto = {
   category: string;
   /** Optional. */
   brand: string | null;
+  /** Named facts such as Colour: Black, in the order the admin gave them. */
+  attributes: ProductAttribute[];
   /** Where the picture is (the URL carries its version), or null when the product has none. */
   imageUrl: string | null;
   /** Off sale. Only the admin console is ever sent an archived product. */
@@ -51,6 +58,8 @@ export type CreateProductRequest = {
   category: string;
   /** Optional; blank means none. */
   brand?: string | null;
+  /** Replaces the product's attributes; leave out to keep them. */
+  attributes?: ProductAttribute[];
 };
 
 export async function createProduct(request: CreateProductRequest): Promise<{ id: string }> {
