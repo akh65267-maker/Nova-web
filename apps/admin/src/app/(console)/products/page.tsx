@@ -32,6 +32,8 @@ import {
   useSetProductArchived,
   useUpdateProduct,
   useUploadProductImage,
+  useAddGalleryImage,
+  useRemoveGalleryImage,
 } from "@taskmanager/api/use-products";
 import type { ProductAttribute, ProductDto } from "@taskmanager/api/catalog-api";
 import { useCreateInventory, useInventoryList, useRestockInventory } from "@taskmanager/api/use-inventory";
@@ -110,6 +112,63 @@ function AttributesField({
           Add attribute
         </Button>
       )}
+    </div>
+  );
+}
+
+// The extra pictures of a product, beside its main one. Each change is saved at once.
+function GalleryField({ product }: { product: ProductDto }) {
+  const add = useAddGalleryImage();
+  const remove = useRemoveGalleryImage();
+  const input = useRef<HTMLInputElement>(null);
+  const busy = add.isPending || remove.isPending;
+
+  function handleChoose(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+
+    if (!PICTURE_TYPES.includes(file.type)) return void toast.error("Choose a JPEG, PNG or WebP picture.");
+    if (file.size > PICTURE_MAX_BYTES) return void toast.error("A picture can be at most 2 MB.");
+
+    add.mutate(
+      { id: product.id, file },
+      { onSuccess: () => toast.success("Picture added"), onError: (error) => toast.error(getApiErrorMessage(error)) },
+    );
+  }
+
+  return (
+    <div className="flex flex-col gap-1.5">
+      <Label>Gallery (optional)</Label>
+      <div className="flex flex-wrap items-center gap-2">
+        {product.gallery.map((url, index) => (
+          <div key={url} className="relative size-14 shrink-0">
+            <Image src={url} alt={`Gallery picture ${index + 1} of ${product.name}`} width={56} height={56} unoptimized className="size-14 rounded-md object-cover ring-1 ring-foreground/10" />
+            <button
+              type="button"
+              disabled={busy}
+              aria-label={`Remove gallery picture ${index + 1}`}
+              className="absolute -top-1.5 -right-1.5 flex size-5 items-center justify-center rounded-full bg-background ring-1 ring-foreground/20 hover:bg-muted"
+              onClick={() =>
+                remove.mutate(
+                  { id: product.id, version: url.slice(url.lastIndexOf("/") + 1) },
+                  { onSuccess: () => toast.success("Picture removed"), onError: (error) => toast.error(getApiErrorMessage(error)) },
+                )
+              }
+            >
+              <X className="size-3" />
+            </button>
+          </div>
+        ))}
+        {product.gallery.length < 8 && (
+          <>
+            <input ref={input} type="file" accept={PICTURE_TYPES.join(",")} className="hidden" aria-label={`Add a gallery picture for ${product.name}`} onChange={handleChoose} />
+            <Button type="button" size="sm" variant="outline" className="shrink-0" disabled={busy} onClick={() => input.current?.click()}>
+              {add.isPending ? "Uploading..." : "Add picture"}
+            </Button>
+          </>
+        )}
+      </div>
     </div>
   );
 }
@@ -319,6 +378,7 @@ function EditProductDialog({ product }: { product: ProductDto }) {
 
             <BrandField id={`edit-brand-${product.id}`} value={brand} onChange={setBrand} />
             <AttributesField value={attributes} onChange={setAttributes} />
+            <GalleryField product={product} />
 
             <div className="flex flex-col gap-1.5">
               <Label>Category</Label>

@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { createServer, type Server } from "node:http";
 import type { AddressInfo } from "node:net";
 import { after, before, beforeEach, test } from "node:test";
-import { createProductImageHandler } from "./image.ts";
+import { createGalleryImageHandler, createProductImageHandler } from "./image.ts";
 
 const ID = "3f2b8c1e-5a47-4c0e-9d11-0a1b2c3d4e5f";
 const PNG = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 1, 2, 3]);
@@ -10,6 +10,7 @@ const PNG = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 1, 2, 3
 // A stand-in for the gateway that records what it was sent.
 let gateway: Server;
 let handler: (request: Request, id: string) => Promise<Response>;
+let galleryHandler: (request: Request, id: string, version: string) => Promise<Response>;
 let received: { url: string; headers: Record<string, string | string[] | undefined> }[];
 let respond: (url: string, ifNoneMatch?: string) => { status: number; headers?: Record<string, string>; body?: Buffer };
 
@@ -21,6 +22,7 @@ before(async () => {
     res.end(out.body);
   });
   await new Promise<void>((resolve) => gateway.listen(0, "127.0.0.1", resolve));
+  galleryHandler = createGalleryImageHandler(`http://127.0.0.1:${(gateway.address() as AddressInfo).port}`);
   handler = createProductImageHandler(`http://127.0.0.1:${(gateway.address() as AddressInfo).port}`);
 });
 
@@ -86,4 +88,19 @@ test("a product without a picture is a 404, and a failing gateway is a 502", asy
 
   respond = () => ({ status: 500 });
   assert.equal((await get(ID)).status, 502);
+});
+
+test("a gallery picture comes through with the backend's caching headers", async () => {
+  const response = await galleryHandler(new Request("http://localhost:3100/x"), ID, "abc123");
+
+  assert.equal(response.status, 200);
+  assert.equal(response.headers.get("cache-control"), "public, max-age=31536000, immutable");
+  assert.deepEqual(Buffer.from(await response.arrayBuffer()), PNG);
+  assert.equal(received[0].url, `/products/${ID}/gallery/abc123`);
+});
+
+test("a gallery request with a bad id or version never reaches the gateway", async () => {
+  assert.equal((await galleryHandler(new Request("http://localhost:3100/x"), ID, "../x")).status, 404);
+  assert.equal((await galleryHandler(new Request("http://localhost:3100/x"), "1", "abc")).status, 404);
+  assert.equal(received.length, 0);
 });

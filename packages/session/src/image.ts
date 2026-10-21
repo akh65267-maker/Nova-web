@@ -43,3 +43,36 @@ export function createProductImageHandler(gatewayUrl: string) {
     return new Response(upstream.status === 304 ? null : await upstream.arrayBuffer(), { status: upstream.status, headers: out });
   };
 }
+
+/** Serves one of a product's gallery pictures the same way: public, immutable, nothing of the browser's passed on. */
+export function createGalleryImageHandler(gatewayUrl: string) {
+  return async function galleryImage(request: Request, id: string, version: string): Promise<Response> {
+    if (!PRODUCT_ID.test(id) || !VERSION.test(version)) return new Response(null, { status: 404 });
+
+    const headers = new Headers();
+    const etag = request.headers.get("if-none-match");
+    if (etag) headers.set("if-none-match", etag);
+
+    let upstream: Response;
+    try {
+      upstream = await fetch(`${gatewayUrl}/products/${id}/gallery/${version}`, {
+        headers,
+        redirect: "manual",
+        signal: AbortSignal.timeout(TIMEOUT_MS),
+      });
+    } catch {
+      return new Response(null, { status: 502 });
+    }
+
+    if (upstream.status === 404) return new Response(null, { status: 404 });
+    if (upstream.status !== 200 && upstream.status !== 304) return new Response(null, { status: 502 });
+
+    const out = new Headers();
+    for (const name of ["content-type", "cache-control", "etag", "x-content-type-options"]) {
+      const value = upstream.headers.get(name);
+      if (value) out.set(name, value);
+    }
+
+    return new Response(upstream.status === 304 ? null : await upstream.arrayBuffer(), { status: upstream.status, headers: out });
+  };
+}
