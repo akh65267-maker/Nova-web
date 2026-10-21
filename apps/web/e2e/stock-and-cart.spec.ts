@@ -86,7 +86,7 @@ test("a signed-in cart follows the customer to another browser", async ({ page, 
     await second.getByRole("main").getByRole("button", { name: "Sign in" }).click();
     await expect(second).not.toHaveURL(/\/login/);
 
-    await second.getByRole("button", { name: "Cart" }).click();
+    await second.getByRole("button", { name: /^Cart\b/ }).click();
     await expect(second.getByText(product!.name).first()).toBeVisible();
   } finally {
     await other.close();

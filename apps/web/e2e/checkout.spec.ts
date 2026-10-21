@@ -123,7 +123,7 @@ test("signing out empties the cart", async ({ page, request }) => {
   await page.getByRole("button", { name: "Add to cart" }).click();
 
   // The cart really holds it before signing out.
-  await page.getByRole("button", { name: "Cart" }).click();
+  await page.getByRole("button", { name: /^Cart\b/ }).click();
   await expect(page.getByRole("dialog").getByText(product.name)).toBeVisible();
   await page.keyboard.press("Escape");
 
@@ -132,12 +132,12 @@ test("signing out empties the cart", async ({ page, request }) => {
   // The session is in cookies now: signing out must clear them.
   await expect.poll(async () => (await page.context().cookies()).filter((c) => c.name.startsWith("tm_shop_")).length).toBe(0);
 
-  await page.getByRole("button", { name: "Cart" }).click();
+  await page.getByRole("button", { name: /^Cart\b/ }).click();
   await expect(page.getByText("Your cart is empty")).toBeVisible();
 
   // And it stays empty: nothing is left in storage for a reload to bring back.
   await page.reload();
-  await page.getByRole("button", { name: "Cart" }).click();
+  await page.getByRole("button", { name: /^Cart\b/ }).click();
   await expect(page.getByText("Your cart is empty")).toBeVisible();
 });
 
