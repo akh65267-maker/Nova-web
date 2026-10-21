@@ -6,6 +6,8 @@ export type ProductDto = {
   description: string;
   price: number;
   category: string;
+  /** Optional. */
+  brand: string | null;
   /** Where the picture is (the URL carries its version), or null when the product has none. */
   imageUrl: string | null;
   /** Off sale. Only the admin console is ever sent an archived product. */
@@ -21,6 +23,7 @@ export type ProductListResult = {
 
 export type ProductListParams = {
   category?: string;
+  brand?: string;
   minPrice?: number;
   maxPrice?: number;
   search?: string;
@@ -46,6 +49,8 @@ export type CreateProductRequest = {
   description: string;
   price: number;
   category: string;
+  /** Optional; blank means none. */
+  brand?: string | null;
 };
 
 export async function createProduct(request: CreateProductRequest): Promise<{ id: string }> {
@@ -100,4 +105,16 @@ export async function renameCategory(id: string, name: string): Promise<void> {
 /** Admin only. Refused (409) while the category still has products. */
 export async function deleteCategory(id: string): Promise<void> {
   await apiClient.delete(`/categories/${id}`);
+}
+
+export type BrandDto = {
+  name: string;
+  /** Products on sale with this brand. */
+  productCount: number;
+};
+
+/** The brands of products on sale. */
+export async function listBrands(): Promise<BrandDto[]> {
+  const { data } = await apiClient.get<BrandDto[]>("/products/brands");
+  return data;
 }

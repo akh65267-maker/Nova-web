@@ -34,10 +34,28 @@ import {
 } from "@taskmanager/api/use-products";
 import type { ProductDto } from "@taskmanager/api/catalog-api";
 import { useCreateInventory, useInventoryList, useRestockInventory } from "@taskmanager/api/use-inventory";
+import { useBrands } from "@taskmanager/api/use-brands";
 import { useCategories } from "@taskmanager/api/use-categories";
 import { ErrorMessage } from "@taskmanager/ui/components/error-message";
 import { ErrorState } from "@taskmanager/ui/components/error-state";
 import { getApiErrorMessage } from "@taskmanager/api/errors";
+
+// Free text, with the brands already in use offered as suggestions.
+function BrandField({ id, value, onChange }: { id: string; value: string; onChange: (value: string) => void }) {
+  const { data: brands = [] } = useBrands();
+
+  return (
+    <div className="flex flex-col gap-1.5">
+      <Label htmlFor={id}>Brand (optional)</Label>
+      <Input id={id} list={`${id}-brands`} maxLength={100} value={value} onChange={(e) => onChange(e.target.value)} />
+      <datalist id={`${id}-brands`}>
+        {brands.map((b) => (
+          <option key={b.name} value={b.name} />
+        ))}
+      </datalist>
+    </div>
+  );
+}
 
 function NewProductDialog() {
   const [open, setOpen] = useState(false);
@@ -45,6 +63,7 @@ function NewProductDialog() {
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState("");
   const [category, setCategory] = useState("");
+  const [brand, setBrand] = useState("");
   const [stock, setStock] = useState("0");
 
   const { data: categoryList = [] } = useCategories();
@@ -60,6 +79,7 @@ function NewProductDialog() {
     setDescription("");
     setPrice("");
     setCategory("");
+    setBrand("");
     setStock("0");
   }
 
@@ -67,7 +87,7 @@ function NewProductDialog() {
     e.preventDefault();
 
     createProduct.mutate(
-      { name, description, price: Number(price), category: selectedCategory },
+      { name, description, price: Number(price), category: selectedCategory, brand },
       {
         onSuccess: ({ id }) => {
           createInventory.mutate(
@@ -134,6 +154,8 @@ function NewProductDialog() {
             </div>
           </div>
 
+          <BrandField id="brand" value={brand} onChange={setBrand} />
+
           <div className="flex flex-col gap-1.5">
             <Label>Category</Label>
             <Select value={selectedCategory} onValueChange={(value) => setCategory(value ?? "")}>
@@ -175,6 +197,7 @@ function EditProductDialog({ product }: { product: ProductDto }) {
   const [description, setDescription] = useState(product.description);
   const [price, setPrice] = useState(String(product.price));
   const [category, setCategory] = useState(product.category);
+  const [brand, setBrand] = useState(product.brand ?? "");
 
   const update = useUpdateProduct();
   // A product saved with a category outside the list (a typo) still shows its own value.
@@ -188,6 +211,7 @@ function EditProductDialog({ product }: { product: ProductDto }) {
       setDescription(product.description);
       setPrice(String(product.price));
       setCategory(product.category);
+      setBrand(product.brand ?? "");
       update.reset();
     }
     setOpen(next);
@@ -197,7 +221,7 @@ function EditProductDialog({ product }: { product: ProductDto }) {
     e.preventDefault();
 
     update.mutate(
-      { id: product.id, name, description, price: Number(price), category },
+      { id: product.id, name, description, price: Number(price), category, brand },
       {
         onSuccess: () => {
           toast.success(`${name} updated`);
@@ -230,6 +254,8 @@ function EditProductDialog({ product }: { product: ProductDto }) {
               <Label htmlFor={`edit-price-${product.id}`}>Price</Label>
               <Input id={`edit-price-${product.id}`} type="number" min="0" step="0.01" required value={price} onChange={(e) => setPrice(e.target.value)} />
             </div>
+
+            <BrandField id={`edit-brand-${product.id}`} value={brand} onChange={setBrand} />
 
             <div className="flex flex-col gap-1.5">
               <Label>Category</Label>
@@ -442,6 +468,7 @@ export default function AdminProductsPage() {
               <TableRow key={product.id} className={product.isArchived ? "opacity-60" : undefined}>
                 <TableCell className="font-medium">
                   {product.name}
+                  {product.brand && <span className="ml-2 text-xs font-normal text-muted-foreground">{product.brand}</span>}
                   {product.isArchived && <span className="ml-2 text-xs font-normal text-muted-foreground">Archived</span>}
                 </TableCell>
                 <TableCell>

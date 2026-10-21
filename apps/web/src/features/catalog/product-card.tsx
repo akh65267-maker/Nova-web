@@ -40,7 +40,7 @@ export function ProductCard({ product, priority }: { product: ProductDto; priori
       </Link>
       <CardContent className="flex flex-1 flex-col gap-1.5 p-4">
         <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
-          {product.category}
+          {product.brand ? `${product.brand} · ${product.category}` : product.category}
         </p>
         <Link
           href={`/products/${product.id}`}

@@ -34,6 +34,7 @@ export function useCreateProduct() {
     mutationFn: (request: CreateProductRequest) => createProduct(request),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["products"] });
+      queryClient.invalidateQueries({ queryKey: ["brands"] });
     },
   });
 }
@@ -46,6 +47,7 @@ export function useUpdateProduct() {
     onSuccess: (_result, { id }) => {
       queryClient.invalidateQueries({ queryKey: ["products"] });
       queryClient.invalidateQueries({ queryKey: ["product", id] });
+      queryClient.invalidateQueries({ queryKey: ["brands"] });
     },
   });
 }
