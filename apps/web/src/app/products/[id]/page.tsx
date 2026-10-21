@@ -13,6 +13,8 @@ import { MAX_PER_ORDER, useCartStore } from "@/store/cart-store";
 import { ProductGallery } from "@/features/catalog/product-gallery";
 import { ProductPrice } from "@/features/catalog/product-price";
 import { RelatedProducts } from "@/features/catalog/related-products";
+import { ProductReviews } from "@/features/reviews/product-reviews";
+import { StarRating } from "@/features/reviews/star-rating";
 import { cn } from "@/lib/utils";
 
 export default function ProductDetailPage(props: PageProps<"/products/[id]">) {
@@ -97,6 +99,12 @@ export default function ProductDetailPage(props: PageProps<"/products/[id]">) {
             {product.category}
           </Link>
           <h1 className="text-3xl font-bold tracking-tight text-balance">{product.name}</h1>
+          {product.ratingAverage !== null && (
+            <a href="#reviews" className="flex w-fit items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
+              <StarRating value={product.ratingAverage} />
+              {product.ratingAverage.toFixed(1)} ({product.ratingCount})
+            </a>
+          )}
           <ProductPrice product={product} className="text-3xl" />
           {product.discountEndsAtUtc && (
             <p className="text-sm text-muted-foreground">Offer ends {new Date(product.discountEndsAtUtc).toLocaleDateString()}</p>
@@ -203,6 +211,8 @@ export default function ProductDetailPage(props: PageProps<"/products/[id]">) {
           </dl>
         </section>
       )}
+
+      <ProductReviews productId={product.id} />
 
       <RelatedProducts productId={product.id} />
     </div>
