@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import Image from "next/image";
 import { toast } from "sonner";
 import { AxiosError } from "axios";
+import { X } from "lucide-react";
 import { Button } from "@taskmanager/ui/components/button";
 import { Input } from "@taskmanager/ui/components/input";
 import { Label } from "@taskmanager/ui/components/label";
@@ -32,7 +33,7 @@ import {
   useUpdateProduct,
   useUploadProductImage,
 } from "@taskmanager/api/use-products";
-import type { ProductDto } from "@taskmanager/api/catalog-api";
+import type { ProductAttribute, ProductDto } from "@taskmanager/api/catalog-api";
 import { useCreateInventory, useInventoryList, useRestockInventory } from "@taskmanager/api/use-inventory";
 import { useBrands } from "@taskmanager/api/use-brands";
 import { useCategories } from "@taskmanager/api/use-categories";
@@ -57,6 +58,62 @@ function BrandField({ id, value, onChange }: { id: string; value: string; onChan
   );
 }
 
+// Rows of name and value; blank rows are dropped by the server.
+function AttributesField({
+  value,
+  onChange,
+}: {
+  value: ProductAttribute[];
+  onChange: (value: ProductAttribute[]) => void;
+}) {
+  const setRow = (index: number, row: ProductAttribute) => onChange(value.map((r, i) => (i === index ? row : r)));
+
+  return (
+    <div className="flex flex-col gap-1.5">
+      <Label>Attributes (optional)</Label>
+      {value.map((row, index) => (
+        <div key={index} className="flex gap-2">
+          <Input
+            aria-label={`Attribute ${index + 1} name`}
+            placeholder="Colour"
+            maxLength={50}
+            value={row.name}
+            onChange={(e) => setRow(index, { ...row, name: e.target.value })}
+          />
+          <Input
+            aria-label={`Attribute ${index + 1} value`}
+            placeholder="Black"
+            maxLength={200}
+            value={row.value}
+            onChange={(e) => setRow(index, { ...row, value: e.target.value })}
+          />
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            className="shrink-0"
+            aria-label={`Remove attribute ${index + 1}`}
+            onClick={() => onChange(value.filter((_, i) => i !== index))}
+          >
+            <X className="size-4" />
+          </Button>
+        </div>
+      ))}
+      {value.length < 20 && (
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          className="w-fit"
+          onClick={() => onChange([...value, { name: "", value: "" }])}
+        >
+          Add attribute
+        </Button>
+      )}
+    </div>
+  );
+}
+
 function NewProductDialog() {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
@@ -64,6 +121,7 @@ function NewProductDialog() {
   const [price, setPrice] = useState("");
   const [category, setCategory] = useState("");
   const [brand, setBrand] = useState("");
+  const [attributes, setAttributes] = useState<ProductAttribute[]>([]);
   const [stock, setStock] = useState("0");
 
   const { data: categoryList = [] } = useCategories();
@@ -80,6 +138,7 @@ function NewProductDialog() {
     setPrice("");
     setCategory("");
     setBrand("");
+    setAttributes([]);
     setStock("0");
   }
 
@@ -87,7 +146,7 @@ function NewProductDialog() {
     e.preventDefault();
 
     createProduct.mutate(
-      { name, description, price: Number(price), category: selectedCategory, brand },
+      { name, description, price: Number(price), category: selectedCategory, brand, attributes },
       {
         onSuccess: ({ id }) => {
           createInventory.mutate(
@@ -155,6 +214,7 @@ function NewProductDialog() {
           </div>
 
           <BrandField id="brand" value={brand} onChange={setBrand} />
+          <AttributesField value={attributes} onChange={setAttributes} />
 
           <div className="flex flex-col gap-1.5">
             <Label>Category</Label>
@@ -198,6 +258,7 @@ function EditProductDialog({ product }: { product: ProductDto }) {
   const [price, setPrice] = useState(String(product.price));
   const [category, setCategory] = useState(product.category);
   const [brand, setBrand] = useState(product.brand ?? "");
+  const [attributes, setAttributes] = useState<ProductAttribute[]>(product.attributes);
 
   const update = useUpdateProduct();
   // A product saved with a category outside the list (a typo) still shows its own value.
@@ -212,6 +273,7 @@ function EditProductDialog({ product }: { product: ProductDto }) {
       setPrice(String(product.price));
       setCategory(product.category);
       setBrand(product.brand ?? "");
+      setAttributes(product.attributes);
       update.reset();
     }
     setOpen(next);
@@ -221,7 +283,7 @@ function EditProductDialog({ product }: { product: ProductDto }) {
     e.preventDefault();
 
     update.mutate(
-      { id: product.id, name, description, price: Number(price), category, brand },
+      { id: product.id, name, description, price: Number(price), category, brand, attributes },
       {
         onSuccess: () => {
           toast.success(`${name} updated`);
@@ -256,6 +318,7 @@ function EditProductDialog({ product }: { product: ProductDto }) {
             </div>
 
             <BrandField id={`edit-brand-${product.id}`} value={brand} onChange={setBrand} />
+            <AttributesField value={attributes} onChange={setAttributes} />
 
             <div className="flex flex-col gap-1.5">
               <Label>Category</Label>

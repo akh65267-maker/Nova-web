@@ -184,6 +184,22 @@ export default function ProductDetailPage(props: PageProps<"/products/[id]">) {
           </div>
         </div>
       </div>
+
+      {product.attributes.length > 0 && (
+        <section className="mt-12" aria-labelledby="specifications">
+          <h2 id="specifications" className="mb-4 text-lg font-semibold">
+            Specifications
+          </h2>
+          <dl className="divide-y rounded-xl ring-1 ring-foreground/10">
+            {product.attributes.map(({ name, value }) => (
+              <div key={name} className="grid grid-cols-3 gap-4 px-4 py-3 text-sm">
+                <dt className="text-muted-foreground">{name}</dt>
+                <dd className="col-span-2">{value}</dd>
+              </div>
+            ))}
+          </dl>
+        </section>
+      )}
     </div>
   );
 }
