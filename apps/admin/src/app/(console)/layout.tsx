@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ArrowLeft, LayoutDashboard, LogOut, Package, ReceiptText, ShieldCheck, type LucideIcon } from "lucide-react";
+import { ArrowLeft, LayoutDashboard, LogOut, Package, ReceiptText, Tags, ShieldCheck, type LucideIcon } from "lucide-react";
 import { Button } from "@taskmanager/ui/components/button";
 import { Skeleton } from "@taskmanager/ui/components/skeleton";
 import { cn } from "@taskmanager/ui/lib/utils";
@@ -16,6 +16,7 @@ const NAV: { href: string; label: string; icon: LucideIcon }[] = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/orders", label: "Orders", icon: ReceiptText },
   { href: "/products", label: "Products", icon: Package },
+  { href: "/categories", label: "Categories", icon: Tags },
 ];
 
 // One guard for every page of the console. A signed-in user who is not an admin is sent to the

@@ -3,7 +3,7 @@
 import { Checkbox } from "@taskmanager/ui/components/checkbox";
 import { Slider } from "@taskmanager/ui/components/slider";
 import { Button } from "@taskmanager/ui/components/button";
-import { CATEGORIES } from "@taskmanager/api/categories";
+import { useCategories } from "@taskmanager/api/use-categories";
 import { MAX_PRICE } from "./list-params";
 
 export type FilterState = {
@@ -20,6 +20,7 @@ export function ProductFilters({
   filters: FilterState;
   onChange: (next: Partial<FilterState>) => void;
 }) {
+  const { data: categories = [] } = useCategories();
   const hasActiveFilters =
     filters.category !== null || filters.minPrice > 0 || filters.maxPrice < MAX_PRICE || filters.search !== "";
 
@@ -41,7 +42,7 @@ export function ProductFilters({
       <div>
         <h3 className="mb-3 text-sm font-medium">Category</h3>
         <div className="flex flex-col gap-2">
-          {CATEGORIES.map((category) => (
+          {categories.map(({ name: category }) => (
             <label key={category} className="flex items-center gap-2 text-sm">
               <Checkbox
                 checked={filters.category === category}
