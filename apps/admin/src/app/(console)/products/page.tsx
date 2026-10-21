@@ -667,7 +667,7 @@ export default function AdminProductsPage() {
               <TableHead>Category</TableHead>
               <TableHead>Price</TableHead>
               <TableHead>Stock</TableHead>
-              <TableHead>Actions</TableHead>
+              <TableHead className="sticky right-0 border-l bg-background">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -696,7 +696,7 @@ export default function AdminProductsPage() {
                     <RestockControl productId={product.id} />
                   </div>
                 </TableCell>
-                <TableCell>
+                <TableCell className="sticky right-0 border-l bg-background">
                   <div className="flex items-center gap-1">
                     <EditProductDialog product={product} />
                     <ArchiveControl product={product} />

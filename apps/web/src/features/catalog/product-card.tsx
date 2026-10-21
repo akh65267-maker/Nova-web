@@ -9,6 +9,7 @@ import { useCartStore } from "@/store/cart-store";
 import { toast } from "sonner";
 import type { ProductDto } from "@taskmanager/api/catalog-api";
 import { useInventory } from "@taskmanager/api/use-inventory";
+import { StarRating } from "@/features/reviews/star-rating";
 import { ProductPicture } from "./product-picture";
 import { ProductPrice } from "./product-price";
 
@@ -49,6 +50,12 @@ export function ProductCard({ product, priority }: { product: ProductDto; priori
         >
           {product.name}
         </Link>
+        {product.ratingAverage !== null && (
+          <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+            <StarRating value={product.ratingAverage} className="[&_svg]:size-3.5" />
+            {product.ratingAverage.toFixed(1)} ({product.ratingCount})
+          </span>
+        )}
         <p className="line-clamp-2 text-sm text-muted-foreground">{product.description}</p>
         <ProductPrice product={product} className="mt-auto pt-2 text-lg" />
       </CardContent>
