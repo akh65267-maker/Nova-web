@@ -4,6 +4,7 @@ import { ThemeProvider } from "next-themes";
 import "./globals.css";
 import { QueryProvider } from "@/providers/query-provider";
 import { StoreHydrator } from "@/providers/store-hydrator";
+import { WebVitals } from "@/providers/web-vitals";
 import { Toaster } from "@taskmanager/ui/components/sonner";
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
@@ -25,6 +26,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
           <QueryProvider>
             <StoreHydrator />
+            <WebVitals />
             {children}
             <Toaster />
           </QueryProvider>

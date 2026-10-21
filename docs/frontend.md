@@ -337,3 +337,24 @@ stock — acceptable on a local dev stack, not something to point at shared data
 Verified 2026-09-19 against the running Docker stack: the gateway serves the bare
 `GET /products` the catalog page issues, and its CORS policy allows `http://localhost:3100`
 with credentials.
+
+## Web vitals baseline
+
+`WebVitals` (`providers/web-vitals.tsx`, both apps) logs each Core Web Vital to the console in
+development via Next's `useReportWebVitals`. Lab baseline, 2026-10-21: production build of `apps/web`
+on localhost against the Docker stack, Lighthouse 12 (`npx lighthouse@12 <url> --only-categories=performance`,
+desktop preset and default mobile throttling), seeded catalog.
+
+| Page | Device | Score | FCP | LCP | TBT | CLS |
+|---|---|---|---|---|---|---|
+| `/` | desktop | 99 | 0.3 s | 1.0 s | 0 ms | 0 |
+| `/products` | desktop | 90 | 0.3 s | 0.9 s | 0 ms | 0.193 |
+| `/products/[id]` | desktop | 99 | 0.3 s | 0.9 s | 0 ms | 0 |
+| `/` | mobile | 86 | 0.9 s | 4.2 s | 90 ms | 0 |
+| `/products` | mobile | 79 | 0.9 s | 4.5 s | 160 ms | 0.117 |
+| `/products/[id]` | mobile | 85 | 0.9 s | 4.3 s | 80 ms | 0 |
+
+After the fixes (same method): `/products` CLS 0.193 -> 0 on desktop and 0.123 -> 0 on mobile (score 90 -> 99 and 79 -> 84). The first four cards load eagerly (`priority`), the skeletons match the real card height, and the Suspense fallback reserves the viewport so the footer no longer jumps.
+
+Still open: mobile LCP stays ~4.3 s on every page. The LCP image is no longer lazy, but it is only discovered after the browser has run the JS and fetched the product list (about 2.8 s of load delay on the throttled run). Getting under the 2.5 s budget needs the first page of products fetched on the server (or prefetched and dehydrated into React Query), which is a larger change.
+Budget for the redesign: mobile LCP < 2.5 s, CLS < 0.1, TBT < 200 ms.

@@ -4,6 +4,7 @@ import { ThemeProvider } from "next-themes";
 import "./globals.css";
 import { QueryProvider } from "@/providers/query-provider";
 import { StoreHydrator } from "@/providers/store-hydrator";
+import { WebVitals } from "@/providers/web-vitals";
 import { CartSync } from "@/features/cart/cart-sync";
 import { SiteHeader } from "@/components/layout/site-header";
 import { AssistantPanel } from "@/features/assistant/assistant-panel";
@@ -37,6 +38,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
           <QueryProvider>
             <StoreHydrator />
+            <WebVitals />
             <CartSync />
             <SiteHeader />
             <main className="flex flex-1 flex-col">{children}</main>

@@ -31,7 +31,7 @@ const SORT_LABELS: Record<string, string> = {
 
 export default function ProductsPage() {
   return (
-    <Suspense fallback={null}>
+    <Suspense fallback={<div className="min-h-[100svh]" />}>
       <ProductsPageContent />
     </Suspense>
   );
@@ -94,7 +94,8 @@ function ProductsPageContent() {
           />
         </aside>
 
-        <div>
+        {/* min-h: the footer would otherwise jump when the cards replace the skeletons */}
+        <div className="min-h-[100svh]">
           <div className="mb-6 flex items-center justify-between gap-4">
             {data ? (
               <p className="text-sm text-muted-foreground">
@@ -121,7 +122,10 @@ function ProductsPageContent() {
           {isLoading ? (
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
               {Array.from({ length: 8 }).map((_, i) => (
-                <Skeleton key={i} className="aspect-[3/4] w-full" />
+                <div key={i} className="flex flex-col">
+                  <Skeleton className="aspect-square w-full" />
+                  <Skeleton className="h-[14.3rem] w-full" />
+                </div>
               ))}
             </div>
           ) : isError && !data ? (
@@ -131,8 +135,8 @@ function ProductsPageContent() {
               className="grid grid-cols-2 gap-4 transition-opacity duration-200 sm:grid-cols-3 lg:grid-cols-4"
               style={{ opacity: isFetching ? 0.6 : 1 }}
             >
-              {data.items.map((product) => (
-                <ProductCard key={product.id} product={product} />
+              {data.items.map((product, index) => (
+                <ProductCard key={product.id} product={product} priority={index < 4} />
               ))}
             </div>
           ) : (
