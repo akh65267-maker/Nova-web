@@ -60,10 +60,10 @@ export function FeaturedHero({ product }: { product: ProductDto | null }) {
           </div>
         </div>
 
-        {/* Shop photos sit on white: multiply melts that into the light page; dark mode shows it as a card. */}
+        {/* Shop photos sit on white: multiply melts that into the light page; dark mode shows it on a light grey card. */}
         {product && (
-          <div style={{ "--i": 4 } as CSSProperties} className="hero-rise hero-scroll-tiles relative mt-12 aspect-[16/10] w-full max-w-3xl overflow-hidden sm:mt-16 mix-blend-multiply dark:rounded-[2rem] dark:bg-white dark:mix-blend-normal">
-            <ProductPicture product={product} alt="" sizes="(min-width: 768px) 48rem, 100vw" className="object-contain" priority />
+          <div style={{ "--i": 4 } as CSSProperties} className="hero-rise hero-scroll-tiles relative mt-12 aspect-[16/10] w-full max-w-3xl overflow-hidden sm:mt-16 mix-blend-multiply dark:mb-12 dark:rounded-[2rem] dark:bg-zinc-300 dark:mix-blend-normal">
+            <ProductPicture product={product} alt="" sizes="(min-width: 768px) 48rem, 100vw" className="object-contain mix-blend-multiply" priority />
           </div>
         )}
 

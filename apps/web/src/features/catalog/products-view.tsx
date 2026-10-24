@@ -9,7 +9,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@taskmanager/ui/components/select";
-import { SearchX } from "lucide-react";
+import { SearchX, SlidersHorizontal } from "lucide-react";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@taskmanager/ui/components/sheet";
 import { ErrorState } from "@taskmanager/ui/components/error-state";
 import { getApiErrorMessage } from "@taskmanager/api/errors";
 import { EmptyState } from "@taskmanager/ui/components/empty-state";
@@ -52,30 +53,33 @@ export function ProductsView() {
 
   const totalPages = data ? Math.max(1, Math.ceil(data.totalCount / PAGE_SIZE)) : 1;
 
+  const filterPanel = (
+    <ProductFilters
+      filters={filters}
+      onChange={(next) => {
+        updateParams({
+          category: next.category !== undefined ? next.category : filters.category,
+          brand: next.brand !== undefined ? next.brand : filters.brand,
+          minPrice: next.minPrice !== undefined ? next.minPrice : filters.minPrice,
+          maxPrice: next.maxPrice !== undefined ? next.maxPrice : filters.maxPrice,
+          onSale: (next.onSale !== undefined ? next.onSale : filters.onSale) ? "true" : null,
+          search: next.search !== undefined ? next.search : filters.search,
+        });
+      }}
+    />
+  );
+
   return (
     <div className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
       <div className="grid grid-cols-1 gap-8 md:grid-cols-[240px_1fr]">
-        <aside className="md:sticky md:top-20 md:self-start">
-          <ProductFilters
-            filters={filters}
-            onChange={(next) => {
-              updateParams({
-                category: next.category !== undefined ? next.category : filters.category,
-                brand: next.brand !== undefined ? next.brand : filters.brand,
-                minPrice: next.minPrice !== undefined ? next.minPrice : filters.minPrice,
-                maxPrice: next.maxPrice !== undefined ? next.maxPrice : filters.maxPrice,
-                onSale: (next.onSale !== undefined ? next.onSale : filters.onSale) ? "true" : null,
-                search: next.search !== undefined ? next.search : filters.search,
-              });
-            }}
-          />
-        </aside>
+        {/* Beside the grid from md up; on phones the same panel opens from the Filters button. */}
+        <aside className="hidden md:sticky md:top-20 md:block md:self-start">{filterPanel}</aside>
 
         {/* min-h: the footer would otherwise jump when the cards replace the skeletons */}
         <div className="min-h-[100svh]">
-          <div className="mb-6 flex items-center justify-between gap-4">
+          <div className="mb-6 flex flex-wrap items-center justify-between gap-x-4 gap-y-3">
             {data ? (
-              <p className="text-sm text-muted-foreground">
+              <p className="w-full text-sm text-muted-foreground sm:w-auto">
                 {data.totalCount} {data.totalCount === 1 ? "product" : "products"}
                 {filters.search && ` for "${filters.search}"`}
               </p>
@@ -83,8 +87,24 @@ export function ProductsView() {
               <Skeleton className="h-5 w-24" />
             )}
 
+            <Sheet>
+              <SheetTrigger
+                render={
+                  <Button variant="outline" className="md:hidden">
+                    <SlidersHorizontal className="size-4" /> Filters
+                  </Button>
+                }
+              />
+              <SheetContent side="left">
+                <SheetHeader>
+                  <SheetTitle>Filters</SheetTitle>
+                </SheetHeader>
+                <div className="overflow-y-auto px-4 pb-6">{filterPanel}</div>
+              </SheetContent>
+            </Sheet>
+
             <Select value={sort} onValueChange={(value) => updateParams({ sort: value as string })}>
-              <SelectTrigger className="w-48">
+              <SelectTrigger className="w-44 sm:w-48">
                 <SelectValue placeholder="Sort by">{(value) => SORT_LABELS[value as string]}</SelectValue>
               </SelectTrigger>
               <SelectContent>

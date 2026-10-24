@@ -7,13 +7,15 @@ import { Input } from "@taskmanager/ui/components/input";
 import { useProducts } from "@taskmanager/api/use-products";
 import { ProductPicture } from "./product-picture";
 import { formatPrice } from "@taskmanager/ui/lib/utils";
+import { cn } from "@/lib/utils";
 
 const SUGGESTIONS = 5;
 const DEBOUNCE_MS = 250;
 
 // The header's search: Enter goes to the full results, and while typing the best matches
 // drop down with their pictures. Arrow keys move through them, Escape closes the list.
-export function SearchBox() {
+// Hidden on phones by default; the header shows a full-width copy there (className overrides).
+export function SearchBox({ className }: { className?: string }) {
   const router = useRouter();
   const listId = useId();
   const root = useRef<HTMLFormElement>(null);
@@ -65,7 +67,7 @@ export function SearchBox() {
   }
 
   return (
-    <form ref={root} onSubmit={handleSubmit} role="search" className="relative hidden max-w-sm flex-1 sm:block">
+    <form ref={root} onSubmit={handleSubmit} role="search" className={cn("relative hidden max-w-sm flex-1 sm:block", className)}>
       <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
       <Input
         role="combobox"

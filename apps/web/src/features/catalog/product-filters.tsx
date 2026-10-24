@@ -1,11 +1,15 @@
 "use client";
 
+import { useState } from "react";
 import { Checkbox } from "@taskmanager/ui/components/checkbox";
 import { Slider } from "@taskmanager/ui/components/slider";
 import { Button } from "@taskmanager/ui/components/button";
 import { useBrands } from "@taskmanager/api/use-brands";
 import { useCategories } from "@taskmanager/api/use-categories";
 import { MAX_PRICE } from "./list-params";
+
+// Brands listed before "Show all": the catalog has dozens, which would push everything else away.
+const BRANDS_SHOWN = 8;
 
 export type FilterState = {
   category: string | null;
@@ -25,6 +29,9 @@ export function ProductFilters({
 }) {
   const { data: categories = [] } = useCategories();
   const { data: brands = [] } = useBrands();
+  const [allBrands, setAllBrands] = useState(false);
+  // The chosen brand stays in view even when it is beyond the first few.
+  const shownBrands = allBrands ? brands : brands.filter((brand, index) => index < BRANDS_SHOWN || brand.name === filters.brand);
   const hasActiveFilters =
     filters.category !== null || filters.brand !== null || filters.minPrice > 0 || filters.maxPrice < MAX_PRICE || filters.onSale || filters.search !== "";
 
@@ -69,13 +76,18 @@ export function ProductFilters({
         <div>
           <h3 className="mb-3 text-sm font-medium">Brand</h3>
           <div className="flex flex-col gap-2">
-            {brands.map(({ name }) => (
+            {shownBrands.map(({ name }) => (
               <label key={name} className="flex items-center gap-2 text-sm">
                 <Checkbox checked={filters.brand === name} onCheckedChange={(checked) => onChange({ brand: checked ? name : null })} />
                 {name}
               </label>
             ))}
           </div>
+          {brands.length > BRANDS_SHOWN && (
+            <Button variant="link" size="sm" className="mt-1 h-auto px-0" onClick={() => setAllBrands((all) => !all)}>
+              {allBrands ? "Show fewer" : `Show all ${brands.length} brands`}
+            </Button>
+          )}
         </div>
       )}
 
