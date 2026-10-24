@@ -30,7 +30,9 @@ export function ProductCard({ product, priority }: { product: ProductDto; priori
     // Image first and quiet: no border, the photo on a soft tile, name and price underneath. Where the pointer
     // can hover, Add to cart appears on hover or focus; on touch it is always there. "group" marks the card
     // (the e2e tests find it by that class).
-    <div className="group flex h-full flex-col gap-3">
+    // relative: the screen-reader-only text below is absolutely positioned and must stay inside the
+    // card; in a scrolling row it otherwise escapes the row and widens the whole page.
+    <div className="group relative flex h-full flex-col gap-3">
       <Link href={`/products/${product.id}`} tabIndex={-1} aria-hidden className={cn("relative block aspect-square overflow-hidden rounded-2xl bg-muted", product.imageUrl && "dark:bg-zinc-300")}>
         <ProductPicture
           product={product}
