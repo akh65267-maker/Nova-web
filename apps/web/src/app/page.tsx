@@ -5,7 +5,6 @@ import { Card, CardContent } from "@taskmanager/ui/components/card";
 import { fetchCategories } from "@/lib/catalog-server";
 import { BestOffers, NewArrivals, TopSelling } from "@/features/catalog/product-row";
 import { ProductIllustration } from "@/features/catalog/product-illustration";
-import { HeroShapes } from "@/components/hero/hero-shapes";
 import { cn } from "@/lib/utils";
 
 export default async function Home() {
@@ -22,7 +21,12 @@ export default async function Home() {
           aria-hidden
         />
 
-        <HeroShapes />
+        {/* Slow brand-colour aurora, CSS only (see .hero-aurora in globals.css) */}
+        <div className="hero-aurora pointer-events-none absolute inset-0" aria-hidden>
+          <span />
+          <span />
+          <span />
+        </div>
 
         <div className="relative mx-auto flex max-w-7xl items-center gap-12 px-4 py-20 sm:px-6 sm:py-28 lg:px-8">
           {/* ── Left: text content ──────────────────── */}
