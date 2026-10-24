@@ -1,0 +1,172 @@
+[
+  {
+    "id": "mock-1",
+    "name": "iPhone 13 Pro",
+    "description": "The iPhone 13 Pro is a cutting-edge smartphone with a powerful camera system, high-performance chip, and stunning display. It offers advanced features for users who demand top-notch technology.",
+    "price": 1099.99,
+    "listPrice": 1099.99,
+    "discountPercent": null,
+    "discountEndsAtUtc": null,
+    "category": "Electronics",
+    "brand": "Apple",
+    "attributes": [
+      {
+        "name": "Type",
+        "value": "smartphones"
+      }
+    ],
+    "gallery": [
+      "https://cdn.dummyjson.com/product-images/smartphones/iphone-13-pro/2.webp",
+      "https://cdn.dummyjson.com/product-images/smartphones/iphone-13-pro/3.webp"
+    ],
+    "ratingAverage": 4.1,
+    "ratingCount": 3,
+    "imageUrl": "https://cdn.dummyjson.com/product-images/smartphones/iphone-13-pro/1.webp",
+    "isArchived": false
+  },
+  {
+    "id": "mock-2",
+    "name": "Apple AirPods Max Silver",
+    "description": "The Apple AirPods Max in Silver are premium over-ear headphones with high-fidelity audio, adaptive EQ, and active noise cancellation. Experience immersive sound in style.",
+    "price": 549.99,
+    "listPrice": 549.99,
+    "discountPercent": null,
+    "discountEndsAtUtc": null,
+    "category": "Electronics",
+    "brand": "Apple",
+    "attributes": [
+      {
+        "name": "Type",
+        "value": "mobile-accessories"
+      }
+    ],
+    "gallery": [],
+    "ratingAverage": 3.5,
+    "ratingCount": 3,
+    "imageUrl": "https://cdn.dummyjson.com/product-images/mobile-accessories/apple-airpods-max-silver/1.webp",
+    "isArchived": false
+  },
+  {
+    "id": "mock-3",
+    "name": "Rolex Cellini Moonphase",
+    "description": "The Rolex Cellini Moonphase is a masterpiece of horology, featuring a moon phase complication and exquisite design. It reflects Rolex's commitment to precision and elegance.",
+    "price": 10659.99,
+    "listPrice": 12999.99,
+    "discountPercent": 18,
+    "discountEndsAtUtc": null,
+    "category": "Fashion",
+    "brand": "Rolex",
+    "attributes": [
+      {
+        "name": "Type",
+        "value": "mens-watches"
+      }
+    ],
+    "gallery": [
+      "https://cdn.dummyjson.com/product-images/mens-watches/rolex-cellini-moonphase/2.webp",
+      "https://cdn.dummyjson.com/product-images/mens-watches/rolex-cellini-moonphase/3.webp"
+    ],
+    "ratingAverage": 2.6,
+    "ratingCount": 3,
+    "imageUrl": "https://cdn.dummyjson.com/product-images/mens-watches/rolex-cellini-moonphase/1.webp",
+    "isArchived": false
+  },
+  {
+    "id": "mock-4",
+    "name": "Nike Air Jordan 1 Red And Black",
+    "description": "The Nike Air Jordan 1 in Red and Black is an iconic basketball sneaker known for its stylish design and high-performance features, making it a favorite among sneaker enthusiasts and athletes.",
+    "price": 149.99,
+    "listPrice": 149.99,
+    "discountPercent": null,
+    "discountEndsAtUtc": null,
+    "category": "Fashion",
+    "brand": "Nike",
+    "attributes": [
+      {
+        "name": "Type",
+        "value": "mens-shoes"
+      }
+    ],
+    "gallery": [
+      "https://cdn.dummyjson.com/product-images/mens-shoes/nike-air-jordan-1-red-and-black/2.webp",
+      "https://cdn.dummyjson.com/product-images/mens-shoes/nike-air-jordan-1-red-and-black/3.webp",
+      "https://cdn.dummyjson.com/product-images/mens-shoes/nike-air-jordan-1-red-and-black/4.webp"
+    ],
+    "ratingAverage": 4.8,
+    "ratingCount": 3,
+    "imageUrl": "https://cdn.dummyjson.com/product-images/mens-shoes/nike-air-jordan-1-red-and-black/1.webp",
+    "isArchived": false
+  },
+  {
+    "id": "mock-5",
+    "name": "Calvin Klein CK One",
+    "description": "CK One by Calvin Klein is a classic unisex fragrance, known for its fresh and clean scent. It's a versatile fragrance suitable for everyday wear.",
+    "price": 49.99,
+    "listPrice": 49.99,
+    "discountPercent": null,
+    "discountEndsAtUtc": null,
+    "category": "Beauty",
+    "brand": "Calvin Klein",
+    "attributes": [
+      {
+        "name": "Type",
+        "value": "fragrances"
+      }
+    ],
+    "gallery": [
+      "https://cdn.dummyjson.com/product-images/fragrances/calvin-klein-ck-one/2.webp",
+      "https://cdn.dummyjson.com/product-images/fragrances/calvin-klein-ck-one/3.webp"
+    ],
+    "ratingAverage": 4.4,
+    "ratingCount": 3,
+    "imageUrl": "https://cdn.dummyjson.com/product-images/fragrances/calvin-klein-ck-one/1.webp",
+    "isArchived": false
+  },
+  {
+    "id": "mock-6",
+    "name": "Wooden Bathroom Sink With Mirror",
+    "description": "The Wooden Bathroom Sink with Mirror is a unique and stylish addition to your bathroom, featuring a wooden sink countertop and a matching mirror.",
+    "price": 799.99,
+    "listPrice": 799.99,
+    "discountPercent": null,
+    "discountEndsAtUtc": null,
+    "category": "Home & Kitchen",
+    "brand": "Bath Trends",
+    "attributes": [
+      {
+        "name": "Type",
+        "value": "furniture"
+      }
+    ],
+    "gallery": [
+      "https://cdn.dummyjson.com/product-images/furniture/wooden-bathroom-sink-with-mirror/2.webp",
+      "https://cdn.dummyjson.com/product-images/furniture/wooden-bathroom-sink-with-mirror/3.webp"
+    ],
+    "ratingAverage": 3.6,
+    "ratingCount": 3,
+    "imageUrl": "https://cdn.dummyjson.com/product-images/furniture/wooden-bathroom-sink-with-mirror/1.webp",
+    "isArchived": false
+  },
+  {
+    "id": "mock-7",
+    "name": "Tennis Racket",
+    "description": "The Tennis Racket is an essential piece of equipment used in the sport of tennis. It features a frame with strings and a grip, allowing players to hit the tennis ball.",
+    "price": 39.99,
+    "listPrice": 49.99,
+    "discountPercent": 20,
+    "discountEndsAtUtc": null,
+    "category": "Sports & Outdoors",
+    "brand": null,
+    "attributes": [
+      {
+        "name": "Type",
+        "value": "sports-accessories"
+      }
+    ],
+    "gallery": [],
+    "ratingAverage": 4,
+    "ratingCount": 3,
+    "imageUrl": "https://cdn.dummyjson.com/product-images/sports-accessories/tennis-racket/1.webp",
+    "isArchived": false
+  }
+]
