@@ -54,10 +54,10 @@ function ProductStrip({ title, href, products, isLoading }: { title: string; hre
               View all
             </Link>
           )}
-          <Button variant="outline" size="icon" aria-label="Scroll left" onClick={() => scrollBy(-1)}>
+          <Button variant="secondary" size="icon" className="rounded-full" aria-label="Scroll left" onClick={() => scrollBy(-1)}>
             <ChevronLeft className="size-4" />
           </Button>
-          <Button variant="outline" size="icon" aria-label="Scroll right" onClick={() => scrollBy(1)}>
+          <Button variant="secondary" size="icon" className="rounded-full" aria-label="Scroll right" onClick={() => scrollBy(1)}>
             <ChevronRight className="size-4" />
           </Button>
         </div>
