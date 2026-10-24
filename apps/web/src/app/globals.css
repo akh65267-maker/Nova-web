@@ -149,3 +149,53 @@
     scroll-behavior: auto !important;
   }
 }
+
+/* ── Hero aurora ─────────────────────────────────────────
+   Three soft blobs in the brand colours drifting slowly behind the hero. Radial gradients rather than a
+   blur filter, and only transform animates, so it stays on the compositor. Still for reduced motion. */
+@keyframes aurora-drift {
+  33% {
+    transform: translate(6%, -4%) scale(1.08);
+  }
+  66% {
+    transform: translate(-5%, 5%) scale(0.95);
+  }
+}
+
+.hero-aurora > span {
+  position: absolute;
+  width: 60%;
+  aspect-ratio: 1;
+  border-radius: 9999px;
+  animation: aurora-drift 24s ease-in-out infinite;
+  will-change: transform;
+}
+
+.hero-aurora > span:nth-child(1) {
+  top: -30%;
+  right: -10%;
+  background: radial-gradient(closest-side, color-mix(in oklch, var(--primary) 22%, transparent), transparent);
+}
+
+.hero-aurora > span:nth-child(2) {
+  bottom: -40%;
+  right: 20%;
+  background: radial-gradient(closest-side, color-mix(in oklch, var(--chart-2) 18%, transparent), transparent);
+  animation-duration: 30s;
+  animation-delay: -10s;
+}
+
+.hero-aurora > span:nth-child(3) {
+  top: -20%;
+  left: -20%;
+  width: 45%;
+  background: radial-gradient(closest-side, color-mix(in oklch, var(--chart-3) 12%, transparent), transparent);
+  animation-duration: 36s;
+  animation-delay: -20s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-aurora > span {
+    animation: none;
+  }
+}
