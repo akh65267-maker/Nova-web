@@ -48,7 +48,7 @@ export function ProductsView() {
     router.push(`/products?${params.toString()}`);
   }
 
-  const { data, isLoading, isFetching, isError, error, refetch } = useProducts(params);
+  const { data, isLoading, isPlaceholderData, isError, error, refetch } = useProducts(params);
 
   const totalPages = data ? Math.max(1, Math.ceil(data.totalCount / PAGE_SIZE)) : 1;
 
@@ -100,9 +100,9 @@ export function ProductsView() {
           {isLoading ? (
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
               {Array.from({ length: 8 }).map((_, i) => (
-                <div key={i} className="flex flex-col">
-                  <Skeleton className="aspect-square w-full" />
-                  <Skeleton className="h-[14.3rem] w-full" />
+                <div key={i} className="flex flex-col gap-3">
+                  <Skeleton className="aspect-square w-full rounded-2xl" />
+                  <Skeleton className="h-20 w-full" />
                 </div>
               ))}
             </div>
@@ -111,7 +111,9 @@ export function ProductsView() {
           ) : data && data.items.length > 0 ? (
             <div
               className="grid grid-cols-2 gap-4 transition-opacity duration-200 sm:grid-cols-3 lg:grid-cols-4"
-              style={{ opacity: isFetching ? 0.6 : 1 }}
+              // Dimmed only while the previous filter's results stand in for the new ones. A background refetch
+              // must not dim: the server renders it pending, the client settled, and React keeps the server's style.
+              style={{ opacity: isPlaceholderData ? 0.6 : 1 }}
             >
               {data.items.map((product, index) => (
                 <ProductCard key={product.id} product={product} priority={index < 4} />
