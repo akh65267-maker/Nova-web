@@ -70,7 +70,6 @@
   }
 }
 
-
 /* ── Reveal on scroll ────────────────────────────────────
    Home page sections ease in as they enter the viewport. Without animation-timeline support
    the sections simply show, and reduced motion turns it off. */
@@ -198,59 +197,4 @@
   .hero-aurora > span {
     animation: none;
   }
-}
-
-/* ── Shop surface system ─────────────────────────────────
-   The shop's own take on the shared tokens (the admin console keeps the defaults): neutral
-   Apple-like greys instead of warm ones, near-black text, a single indigo kept for actions,
-   softer borders and larger radii. Loaded after theme.css, so these win. */
-:root {
-  --background: oklch(0.99 0 0);
-  --foreground: oklch(0.2 0.004 285);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.2 0.004 285);
-  --popover: oklch(1 0 0 / 92%);
-  --popover-foreground: oklch(0.2 0.004 285);
-  --secondary: oklch(0.965 0.002 285);
-  --secondary-foreground: oklch(0.2 0.004 285);
-  --muted: oklch(0.965 0.002 285);
-  --muted-foreground: oklch(0.52 0.006 285);
-  --border: oklch(0.92 0.003 285);
-  --input: oklch(0.9 0.003 285);
-  --radius: 1rem;
-}
-
-.dark {
-  --background: oklch(0.12 0 0);
-  --foreground: oklch(0.97 0 0);
-  --card: oklch(0.17 0.002 285);
-  --card-foreground: oklch(0.97 0 0);
-  --popover: oklch(0.17 0.002 285 / 92%);
-  --popover-foreground: oklch(0.97 0 0);
-  --secondary: oklch(0.21 0.003 285);
-  --secondary-foreground: oklch(0.97 0 0);
-  --muted: oklch(0.21 0.003 285);
-  --muted-foreground: oklch(0.7 0.005 285);
-}
-
-@layer base {
-  body {
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    text-rendering: optimizeLegibility;
-  }
-
-  h1,
-  h2 {
-    line-height: 1.05;
-  }
-
-  p {
-    text-wrap: pretty;
-  }
-}
-
-/* Large type gets tighter tracking; Tailwind's tracking-tighter is too loose at 72px. */
-.tracking-tighter {
-  letter-spacing: -0.045em;
 }

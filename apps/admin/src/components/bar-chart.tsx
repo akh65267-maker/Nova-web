@@ -22,9 +22,10 @@ const LEFT = 50;
 const BOTTOM = 24;
 const TOP = 8;
 
-// The next "round" number at or above the maximum, so the gridlines read cleanly.
+// The next "round" number at or above the maximum, so the gridlines read cleanly. Never below 2:
+// the middle gridline is half the top, and a top of 1 put it at 0.5, which a count prints as "1".
 function niceMax(max: number): number {
-  if (max <= 0) return 1;
+  if (max <= 2) return 2;
   const magnitude = 10 ** Math.floor(Math.log10(max));
   const normalized = max / magnitude;
   const step = normalized <= 1 ? 1 : normalized <= 2 ? 2 : normalized <= 5 ? 5 : 10;

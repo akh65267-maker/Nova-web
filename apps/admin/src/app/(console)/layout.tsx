@@ -54,8 +54,9 @@ export default function ConsoleLayout({ children }: { children: React.ReactNode 
       </header>
 
       <div className="mx-auto grid w-full max-w-7xl flex-1 content-start gap-6 px-4 py-8 sm:px-6 md:grid-cols-[200px_1fr] md:gap-10 lg:px-8">
-        <aside className="md:sticky md:top-8 md:self-start">
-          <nav aria-label="Admin" className="flex gap-1 md:flex-col">
+        {/* min-w-0 and a scrolling row: on a phone the four links are wider than the screen. */}
+        <aside className="min-w-0 md:sticky md:top-8 md:self-start">
+          <nav aria-label="Admin" className="flex gap-1 overflow-x-auto [scrollbar-width:none] md:flex-col md:overflow-visible [&::-webkit-scrollbar]:hidden">
             {NAV.map(({ href, label, icon: Icon }) => {
               const active = pathname === href || pathname.startsWith(`${href}/`);
               return (
