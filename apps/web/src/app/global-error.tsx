@@ -1,10 +1,17 @@
 "use client";
 
+import { useEffect } from "react";
 import "./globals.css";
+import { reloadForChunkError } from "@/lib/chunk-reload";
 
 // Only used when the root layout itself fails, so it renders its own document. The theme
 // toggle lives in that layout, so this page is always light.
-export default function GlobalError({ retry }: { error: Error & { digest?: string }; retry: () => void }) {
+export default function GlobalError({ error, retry }: { error: Error & { digest?: string }; retry: () => void }) {
+  // A page older than the running build: a refresh fixes it.
+  useEffect(() => {
+    reloadForChunkError(error);
+  }, [error]);
+
   return (
     <html lang="en">
       <body className="flex min-h-screen flex-col items-center justify-center gap-4 p-6 text-center">

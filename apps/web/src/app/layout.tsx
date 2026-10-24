@@ -5,6 +5,7 @@ import "./globals.css";
 import { QueryProvider } from "@/providers/query-provider";
 import { StoreHydrator } from "@/providers/store-hydrator";
 import { WebVitals } from "@/providers/web-vitals";
+import { ChunkReloader } from "@/providers/chunk-reloader";
 import { CartSync } from "@/features/cart/cart-sync";
 import { SiteHeader } from "@/components/layout/site-header";
 import { AssistantPanel } from "@/features/assistant/assistant-panel";
@@ -39,6 +40,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           <QueryProvider>
             <StoreHydrator />
             <WebVitals />
+            <ChunkReloader />
             <CartSync />
             <SiteHeader />
             <main className="flex flex-1 flex-col">{children}</main>

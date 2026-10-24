@@ -5,6 +5,7 @@ import Link from "next/link";
 import { TriangleAlert } from "lucide-react";
 import { Button } from "@taskmanager/ui/components/button";
 import { EmptyState } from "@taskmanager/ui/components/empty-state";
+import { reloadForChunkError } from "@/lib/chunk-reload";
 
 // Catches an unexpected render error in any page; the header and footer stay in place.
 // `retry` is this Next.js version's recovery call (re-fetches, then re-renders the segment).
@@ -16,6 +17,8 @@ export default function Error({
   retry: () => void;
 }) {
   useEffect(() => {
+    // A page older than the running build: a refresh fixes it, so do that instead of showing an error.
+    if (reloadForChunkError(error)) return;
     console.error(error);
   }, [error]);
 
