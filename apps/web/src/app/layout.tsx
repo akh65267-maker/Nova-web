@@ -11,6 +11,7 @@ import { SiteHeader } from "@/components/layout/site-header";
 import { AssistantPanel } from "@/features/assistant/assistant-panel";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { CartDrawer } from "@/components/layout/cart-drawer";
+import { MotionProvider } from "@taskmanager/ui/components/motion-provider";
 import { Toaster } from "@taskmanager/ui/components/sonner";
 
 const geistSans = Geist({
@@ -38,16 +39,18 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body className="min-h-full flex flex-col">
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
           <QueryProvider>
-            <StoreHydrator />
-            <WebVitals />
-            <ChunkReloader />
-            <CartSync />
-            <SiteHeader />
-            <main className="flex flex-1 flex-col">{children}</main>
-            <SiteFooter />
-            <CartDrawer />
-            <AssistantPanel />
-            <Toaster />
+            <MotionProvider>
+              <StoreHydrator />
+              <WebVitals />
+              <ChunkReloader />
+              <CartSync />
+              <SiteHeader />
+              <main className="flex flex-1 flex-col">{children}</main>
+              <SiteFooter />
+              <CartDrawer />
+              <AssistantPanel />
+              <Toaster />
+            </MotionProvider>
           </QueryProvider>
         </ThemeProvider>
       </body>
