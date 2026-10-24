@@ -91,7 +91,7 @@ test("an administrator signs in, sees the products and signs out", async ({ page
 
   // Back where they were headed, with real data from the backend.
   await expect(page).toHaveURL(/\/products$/);
-  await expect(page.getByRole("heading", { name: "Manage products" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Products", exact: true })).toBeVisible();
   await expect(page.getByRole("button", { name: "New product" })).toBeVisible();
   await expect(page.getByRole("table")).toBeVisible();
 
