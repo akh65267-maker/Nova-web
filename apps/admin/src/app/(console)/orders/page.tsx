@@ -73,7 +73,7 @@ export default function OrdersPage() {
       {orders.isPending && (
         <div className="space-y-2" aria-hidden>
           {Array.from({ length: 8 }).map((_, i) => (
-            <Skeleton key={i} className="h-10 w-full" />
+            <Skeleton key={i} className="h-12 w-full" />
           ))}
         </div>
       )}
@@ -92,10 +92,11 @@ export default function OrdersPage() {
 
       {data && data.items.length > 0 && (
         <>
+          <div className="rounded-xl border bg-card">
           <Table>
-            <TableHeader>
+            <TableHeader className="bg-muted/40">
               <TableRow>
-                <TableHead>Created (UTC)</TableHead>
+                <TableHead className="pl-4">Created (UTC)</TableHead>
                 <TableHead>Order</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead className="text-right">Lines</TableHead>
@@ -108,7 +109,7 @@ export default function OrdersPage() {
                 const s = ORDER_STATUS[o.status];
                 return (
                   <TableRow key={o.id}>
-                    <TableCell className="whitespace-nowrap tabular-nums">{when(o.createdAtUtc)}</TableCell>
+                    <TableCell className="whitespace-nowrap pl-4 tabular-nums">{when(o.createdAtUtc)}</TableCell>
                     <TableCell>
                       <Link href={`/orders/${o.id}`} className="font-mono text-xs underline-offset-4 hover:underline">
                         {o.id.slice(0, 8)}
@@ -130,6 +131,7 @@ export default function OrdersPage() {
               })}
             </TableBody>
           </Table>
+          </div>
 
           <div className="flex items-center justify-between gap-3">
             <p className="text-sm text-muted-foreground">

@@ -1,10 +1,12 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useDeferredValue, useRef, useState } from "react";
 import Image from "next/image";
 import { toast } from "sonner";
 import { AxiosError } from "axios";
-import { X } from "lucide-react";
+import { ChevronLeft, ChevronRight, PackageSearch, Search, X } from "lucide-react";
+import { Badge } from "@taskmanager/ui/components/badge";
+import { EmptyState } from "@taskmanager/ui/components/empty-state";
 import { Button } from "@taskmanager/ui/components/button";
 import { Input } from "@taskmanager/ui/components/input";
 import { Label } from "@taskmanager/ui/components/label";
@@ -632,81 +634,158 @@ function PictureControl({ product }: { product: ProductDto }) {
   );
 }
 
+const PAGE_SIZE = 25;
+const LOW_STOCK_AT = 10;
+
+function StockBadge({ quantity }: { quantity: number }) {
+  if (quantity <= 0) return <Badge variant="destructive">Out of stock</Badge>;
+  if (quantity <= LOW_STOCK_AT) return <Badge variant="warning">Low</Badge>;
+  return null;
+}
+
 export default function AdminProductsPage() {
+  const [search, setSearch] = useState("");
+  const [showArchived, setShowArchived] = useState(true);
+  const [page, setPage] = useState(1);
+  const term = useDeferredValue(search.trim());
   const {
     data: productsResult,
     isLoading: isLoadingProducts,
     isError: isProductsError,
     error: productsError,
     refetch: refetchProducts,
-  } = useProducts({ pageSize: 100, includeArchived: true });
+    isPlaceholderData,
+  } = useProducts({ pageSize: PAGE_SIZE, page, search: term || undefined, includeArchived: showArchived });
   const { data: inventory } = useInventoryList();
 
   const stockByProductId = new Map(inventory?.map((i) => [i.productId, i.quantityAvailable]));
+  const total = productsResult?.totalCount ?? 0;
+  const pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
   return (
-    <div className="w-full">
-      <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-bold tracking-tight">Manage products</h1>
+    <div className="w-full space-y-6">
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight">Products</h1>
+          <p className="text-sm text-muted-foreground">
+            {productsResult ? `${total.toLocaleString("en-US")} products${term ? ` matching "${term}"` : ""}` : "Everything in the catalogue"}
+          </p>
+        </div>
         <NewProductDialog />
       </div>
 
+      <div className="flex flex-wrap items-center gap-3">
+        <div className="relative w-full sm:max-w-xs">
+          <Search className="pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground" aria-hidden />
+          <Input
+            type="search"
+            aria-label="Search products"
+            placeholder="Search products"
+            className="pl-8"
+            value={search}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setPage(1);
+            }}
+          />
+        </div>
+        <Button
+          size="sm"
+          variant={showArchived ? "default" : "outline"}
+          aria-pressed={showArchived}
+          onClick={() => {
+            setShowArchived((v) => !v);
+            setPage(1);
+          }}
+        >
+          Show archived
+        </Button>
+      </div>
+
       {isLoadingProducts ? (
-        <div className="flex flex-col gap-2">
-          <Skeleton className="h-10 w-full" />
-          <Skeleton className="h-10 w-full" />
-          <Skeleton className="h-10 w-full" />
+        <div className="flex flex-col gap-2" aria-hidden>
+          {Array.from({ length: 8 }).map((_, i) => (
+            <Skeleton key={i} className="h-14 w-full" />
+          ))}
         </div>
       ) : isProductsError ? (
         <ErrorState description={getApiErrorMessage(productsError, "Check your connection and try again.")} onRetry={() => refetchProducts()} title="Couldn't load products" />
+      ) : productsResult && productsResult.items.length === 0 ? (
+        <EmptyState icon={PackageSearch} title="No products match" description="Try another search." />
       ) : (
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Name</TableHead>
-              <TableHead>Picture</TableHead>
-              <TableHead>Category</TableHead>
-              <TableHead>Price</TableHead>
-              <TableHead>Stock</TableHead>
-              <TableHead className="sticky right-0 border-l bg-background">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {productsResult?.items.map((product) => (
-              <TableRow key={product.id} className={product.isArchived ? "opacity-60" : undefined}>
-                <TableCell className="font-medium">
-                  {product.name}
-                  {product.brand && <span className="ml-2 text-xs font-normal text-muted-foreground">{product.brand}</span>}
-                  {product.isArchived && <span className="ml-2 text-xs font-normal text-muted-foreground">Archived</span>}
-                </TableCell>
-                <TableCell>
-                  <PictureControl product={product} />
-                </TableCell>
-                <TableCell>{product.category}</TableCell>
-                <TableCell>
-                  {formatPrice(product.price)}
-                  {product.discountPercent !== null && (
-                    <span className="ml-2 text-xs text-muted-foreground line-through">{formatPrice(product.listPrice)}</span>
-                  )}
-                </TableCell>
-                <TableCell>
-                  <div className="flex items-center gap-3">
-                    <span className="min-w-16 text-right text-sm tabular-nums">
-                      {stockByProductId.get(product.id) ?? 0}
-                    </span>
-                    <RestockControl productId={product.id} />
-                  </div>
-                </TableCell>
-                <TableCell className="sticky right-0 border-l bg-background">
-                  <div className="flex items-center gap-1">
-                    <EditProductDialog product={product} />
-                    <ArchiveControl product={product} />
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+        <>
+          <div className={`rounded-xl border bg-card transition-opacity ${isPlaceholderData ? "opacity-60" : ""}`}>
+            <Table>
+              <TableHeader className="bg-muted/40">
+                <TableRow>
+                  <TableHead className="pl-4">Name</TableHead>
+                  <TableHead>Picture</TableHead>
+                  <TableHead>Category</TableHead>
+                  <TableHead>Price</TableHead>
+                  <TableHead>Stock</TableHead>
+                  <TableHead className="sticky right-0 border-l bg-card">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {productsResult?.items.map((product) => {
+                  const stock = stockByProductId.get(product.id) ?? 0;
+                  return (
+                    <TableRow key={product.id} className={product.isArchived ? "opacity-60" : undefined}>
+                      <TableCell className="pl-4 font-medium">
+                        {product.name}
+                        {product.brand && <span className="ml-2 text-xs font-normal text-muted-foreground">{product.brand}</span>}
+                        {product.isArchived && (
+                          <Badge variant="secondary" className="ml-2">
+                            Archived
+                          </Badge>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        <PictureControl product={product} />
+                      </TableCell>
+                      <TableCell>{product.category}</TableCell>
+                      <TableCell className="tabular-nums">
+                        {formatPrice(product.price)}
+                        {product.discountPercent !== null && (
+                          <span className="ml-2 text-xs text-muted-foreground line-through">{formatPrice(product.listPrice)}</span>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-3">
+                          <span className="flex min-w-20 flex-col items-end gap-0.5 text-sm tabular-nums">
+                            {stock}
+                            <StockBadge quantity={stock} />
+                          </span>
+                          <RestockControl productId={product.id} />
+                        </div>
+                      </TableCell>
+                      <TableCell className="sticky right-0 border-l bg-card">
+                        <div className="flex items-center gap-1">
+                          <EditProductDialog product={product} />
+                          <ArchiveControl product={product} />
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </div>
+
+          <div className="flex items-center justify-between gap-3">
+            <p className="text-sm text-muted-foreground">
+              Page {page} of {pages.toLocaleString("en-US")}
+            </p>
+            <div className="flex gap-1">
+              <Button size="sm" variant="outline" disabled={page <= 1} onClick={() => setPage((n) => n - 1)}>
+                <ChevronLeft aria-hidden /> Previous
+              </Button>
+              <Button size="sm" variant="outline" disabled={page >= pages} onClick={() => setPage((n) => n + 1)}>
+                Next <ChevronRight aria-hidden />
+              </Button>
+            </div>
+          </div>
+        </>
       )}
     </div>
   );
