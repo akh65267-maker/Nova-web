@@ -10,7 +10,7 @@ async function signInToAdmin(page: Page) {
   await page.getByLabel("Email").fill(adminEmail!);
   await page.getByLabel("Password").fill(adminPassword!);
   await page.getByRole("button", { name: "Sign in" }).click();
-  await expect(page.getByRole("heading", { name: "Manage products" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Products", exact: true })).toBeVisible();
 }
 
 test("an administrator edits a product, takes it off sale, and brings it back", async ({ page, request }) => {
