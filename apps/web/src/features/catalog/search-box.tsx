@@ -6,6 +6,7 @@ import { Search } from "lucide-react";
 import { Input } from "@taskmanager/ui/components/input";
 import { useProducts } from "@taskmanager/api/use-products";
 import { ProductPicture } from "./product-picture";
+import { formatPrice } from "@taskmanager/ui/lib/utils";
 
 const SUGGESTIONS = 5;
 const DEBOUNCE_MS = 250;
@@ -110,7 +111,7 @@ export function SearchBox() {
                 <p className="truncate text-sm font-medium">{product.name}</p>
                 <p className="truncate text-xs text-muted-foreground">{product.category}</p>
               </div>
-              <span className="text-sm tabular-nums">${product.price.toFixed(2)}</span>
+              <span className="text-sm tabular-nums">{formatPrice(product.price)}</span>
             </li>
           ))}
           {items.length === 0 && (

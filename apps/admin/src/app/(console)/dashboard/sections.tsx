@@ -13,6 +13,7 @@ import { useInventoryList } from "@taskmanager/api/use-inventory";
 import { useProducts } from "@taskmanager/api/use-products";
 import { getApiErrorMessage } from "@taskmanager/api/errors";
 import { BarChart } from "@/components/bar-chart";
+import { formatPrice } from "@taskmanager/ui/lib/utils";
 
 const LOW_STOCK_AT = 10;
 
@@ -170,7 +171,7 @@ export function StuckOrders() {
                   </Link>
                 </TableCell>
                 <TableCell>{age(o.ageSeconds)}</TableCell>
-                <TableCell className="text-right tabular-nums">${o.total.toFixed(2)}</TableCell>
+                <TableCell className="text-right tabular-nums">{formatPrice(o.total)}</TableCell>
               </TableRow>
             ))}
           </TableBody>

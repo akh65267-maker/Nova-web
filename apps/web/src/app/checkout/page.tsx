@@ -12,6 +12,7 @@ import { useCartStore, useCartSubtotal } from "@/store/cart-store";
 import { useCreateOrder } from "@taskmanager/api/use-orders";
 import { useRequireSession } from "@taskmanager/auth/use-require-session";
 import { getApiErrorMessage } from "@taskmanager/api/errors";
+import { formatPrice } from "@taskmanager/ui/lib/utils";
 
 export default function CheckoutPage() {
   const router = useRouter();
@@ -73,11 +74,11 @@ export default function CheckoutPage() {
                 <div className="min-w-0">
                   <p className="font-medium">{item.name}</p>
                   <p className="text-muted-foreground tabular-nums">
-                    {item.quantity} × ${item.price.toFixed(2)}
+                    {item.quantity} × {formatPrice(item.price)}
                   </p>
                 </div>
                 <span className="font-medium tabular-nums">
-                  ${(item.price * item.quantity).toFixed(2)}
+                  {formatPrice(item.price * item.quantity)}
                 </span>
               </li>
             ))}
@@ -87,7 +88,7 @@ export default function CheckoutPage() {
 
           <div className="flex items-center justify-between text-lg font-semibold">
             <span>Total</span>
-            <span className="tabular-nums">${subtotal.toFixed(2)}</span>
+            <span className="tabular-nums">{formatPrice(subtotal)}</span>
           </div>
 
           {createOrder.isError && (

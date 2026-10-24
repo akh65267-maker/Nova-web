@@ -45,6 +45,7 @@ import { useCategories } from "@taskmanager/api/use-categories";
 import { ErrorMessage } from "@taskmanager/ui/components/error-message";
 import { ErrorState } from "@taskmanager/ui/components/error-state";
 import { getApiErrorMessage } from "@taskmanager/api/errors";
+import { formatPrice } from "@taskmanager/ui/lib/utils";
 
 // Free text, with the brands already in use offered as suggestions.
 function BrandField({ id, value, onChange }: { id: string; value: string; onChange: (value: string) => void }) {
@@ -683,9 +684,9 @@ export default function AdminProductsPage() {
                 </TableCell>
                 <TableCell>{product.category}</TableCell>
                 <TableCell>
-                  ${product.price.toFixed(2)}
+                  {formatPrice(product.price)}
                   {product.discountPercent !== null && (
-                    <span className="ml-2 text-xs text-muted-foreground line-through">${product.listPrice.toFixed(2)}</span>
+                    <span className="ml-2 text-xs text-muted-foreground line-through">{formatPrice(product.listPrice)}</span>
                   )}
                 </TableCell>
                 <TableCell>

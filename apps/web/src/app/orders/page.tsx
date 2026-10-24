@@ -12,6 +12,7 @@ import { Skeleton } from "@taskmanager/ui/components/skeleton";
 import { useOrders } from "@taskmanager/api/use-orders";
 import { useRequireSession } from "@taskmanager/auth/use-require-session";
 import { ORDER_STATUS } from "@/features/orders/status";
+import { formatPrice } from "@taskmanager/ui/lib/utils";
 
 export default function OrdersPage() {
   const { isReady } = useRequireSession("/login?redirect=/orders");
@@ -42,7 +43,7 @@ export default function OrdersPage() {
                     <p className="text-sm text-muted-foreground">
                       {new Date(order.createdAtUtc).toLocaleDateString()}
                     </p>
-                    <p className="font-medium tabular-nums">${order.totalAmount.toFixed(2)}</p>
+                    <p className="font-medium tabular-nums">{formatPrice(order.totalAmount)}</p>
                   </div>
                   <Badge variant={(ORDER_STATUS[order.status] ?? ORDER_STATUS.Pending).variant}>
                     {(ORDER_STATUS[order.status] ?? ORDER_STATUS.Pending).label}

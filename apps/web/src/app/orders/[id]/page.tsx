@@ -13,6 +13,7 @@ import { ORDER_STATUS } from "@/features/orders/status";
 import { useOrder } from "@taskmanager/api/use-orders";
 import { cn } from "@/lib/utils";
 import { useRequireSession } from "@taskmanager/auth/use-require-session";
+import { formatPrice } from "@taskmanager/ui/lib/utils";
 
 export default function OrderDetailPage(props: PageProps<"/orders/[id]">) {
   const { id } = use(props.params);
@@ -76,7 +77,7 @@ export default function OrderDetailPage(props: PageProps<"/orders/[id]">) {
             {order.items.map((item) => (
               <li key={item.productId} className="flex items-center justify-between py-3 text-sm">
                 <span>Qty {item.quantity}</span>
-                <span>${(item.unitPrice * item.quantity).toFixed(2)}</span>
+                <span>{formatPrice(item.unitPrice * item.quantity)}</span>
               </li>
             ))}
           </ul>
@@ -85,7 +86,7 @@ export default function OrderDetailPage(props: PageProps<"/orders/[id]">) {
 
           <div className="flex items-center justify-between text-lg font-semibold">
             <span>Total</span>
-            <span>${order.totalAmount.toFixed(2)}</span>
+            <span>{formatPrice(order.totalAmount)}</span>
           </div>
 
           <Button

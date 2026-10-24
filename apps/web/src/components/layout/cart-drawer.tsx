@@ -12,6 +12,7 @@ import {
 import { Button } from "@taskmanager/ui/components/button";
 import { EmptyState } from "@taskmanager/ui/components/empty-state";
 import { MAX_PER_ORDER, useCartStore } from "@/store/cart-store";
+import { formatPrice } from "@taskmanager/ui/lib/utils";
 
 export function CartDrawer() {
   const isOpen = useCartStore((state) => state.isOpen);
@@ -62,10 +63,10 @@ export function CartDrawer() {
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
                       <p className="font-medium">{item.name}</p>
-                      <p className="text-muted-foreground tabular-nums">${item.price.toFixed(2)} each</p>
+                      <p className="text-muted-foreground tabular-nums">{formatPrice(item.price)} each</p>
                     </div>
                     <span className="font-medium tabular-nums">
-                      ${(item.price * item.quantity).toFixed(2)}
+                      {formatPrice(item.price * item.quantity)}
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
@@ -112,7 +113,7 @@ export function CartDrawer() {
         <SheetFooter className="border-t px-4 pt-4">
           <div className="mb-4 flex w-full items-center justify-between text-sm font-semibold">
             <span>Subtotal</span>
-            <span className="tabular-nums">${subtotal.toFixed(2)}</span>
+            <span className="tabular-nums">{formatPrice(subtotal)}</span>
           </div>
           <Button
             className="w-full"

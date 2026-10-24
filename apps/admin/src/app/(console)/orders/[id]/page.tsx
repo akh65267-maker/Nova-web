@@ -14,6 +14,7 @@ import { useProducts } from "@taskmanager/api/use-products";
 import { getApiErrorMessage } from "@taskmanager/api/errors";
 import { ORDER_STATUS } from "@/lib/order-status";
 import { isNotFound } from "@/lib/http";
+import { formatPrice } from "@taskmanager/ui/lib/utils";
 
 const when = (iso: string) => `${new Date(iso).toISOString().replace("T", " ").slice(0, 19)} UTC`;
 
@@ -93,7 +94,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
               </Row>
               {o.status === "Cancelled" && <Row label="Reason">{o.cancellationReason ?? "Not recorded"}</Row>}
               <Row label="Total">
-                <span className="font-semibold tabular-nums">${o.totalAmount.toFixed(2)}</span>
+                <span className="font-semibold tabular-nums">{formatPrice(o.totalAmount)}</span>
               </Row>
             </dl>
           </CardContent>
@@ -144,8 +145,8 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                     {names.get(i.productId) ?? <span className="font-mono text-xs">{i.productId}</span>}
                   </TableCell>
                   <TableCell className="text-right tabular-nums">{i.quantity}</TableCell>
-                  <TableCell className="text-right tabular-nums">${i.unitPrice.toFixed(2)}</TableCell>
-                  <TableCell className="text-right tabular-nums">${(i.quantity * i.unitPrice).toFixed(2)}</TableCell>
+                  <TableCell className="text-right tabular-nums">{formatPrice(i.unitPrice)}</TableCell>
+                  <TableCell className="text-right tabular-nums">{formatPrice(i.quantity * i.unitPrice)}</TableCell>
                 </TableRow>
               ))}
             </TableBody>

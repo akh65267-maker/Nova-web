@@ -14,6 +14,7 @@ import { useAdminOrders } from "@taskmanager/api/use-analytics";
 import { getApiErrorMessage } from "@taskmanager/api/errors";
 import { ORDER_STATUS, STATUSES } from "@/lib/order-status";
 import { PERIODS, periodRange } from "@/lib/period";
+import { formatPrice } from "@taskmanager/ui/lib/utils";
 
 const PAGE_SIZE = 25;
 
@@ -120,7 +121,7 @@ export default function OrdersPage() {
                       </Badge>
                     </TableCell>
                     <TableCell className="text-right tabular-nums">{o.lineCount}</TableCell>
-                    <TableCell className="text-right tabular-nums">${o.total.toFixed(2)}</TableCell>
+                    <TableCell className="text-right tabular-nums">{formatPrice(o.total)}</TableCell>
                     <TableCell className="font-mono text-xs text-muted-foreground" title={o.userId}>
                       {o.userId.slice(0, 8)}
                     </TableCell>
