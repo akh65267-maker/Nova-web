@@ -7,27 +7,36 @@ import { Button } from "@taskmanager/ui/components/button";
 import { Skeleton } from "@taskmanager/ui/components/skeleton";
 import { ErrorState } from "@taskmanager/ui/components/error-state";
 import { cn } from "@taskmanager/ui/lib/utils";
-import { useOrderSummary } from "@taskmanager/api/use-analytics";
+import { useOrderSummary, useTimeseries } from "@taskmanager/api/use-analytics";
+import { Sparkline } from "@/components/sparkline";
 import { getApiErrorMessage } from "@taskmanager/api/errors";
 import { change, firstDay, lastDay, PERIODS, periodRange } from "@/lib/period";
-import { CancellationReasons, DailyCharts, LowStock, StuckOrders } from "./sections";
+import { CancellationReasons, DailyCharts, LowStock, RecentOrders, StuckOrders, TopProducts } from "./sections";
 
 const number = (n: number) => n.toLocaleString("en-US");
 const money = (n: number | null) =>
   n === null ? "None yet" : `$${n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 const percent = (n: number | null) => (n === null ? "None yet" : `${(n * 100).toFixed(1)}%`);
 
+// A percentage on a handful of orders swings wildly (1 order to 5 is "+400%"), so below this many
+// orders in the earlier period the change is shown as the earlier figure instead.
+const MIN_ORDERS_FOR_PERCENT = 5;
+
 // "Good" depends on the figure: more orders is good, more cancellations is not.
 function Change({
   value,
   higherIsBetter = true,
   points = false,
+  previousLabel,
 }: {
   value: number | null;
   higherIsBetter?: boolean;
   /** The value is a difference between two rates, shown in percentage points, not a relative change. */
   points?: boolean;
+  /** When set, the change is not worth a percentage: show this ("Previous period: 2") instead. */
+  previousLabel?: string;
 }) {
+  if (previousLabel) return <span className="text-xs text-muted-foreground">Previous period: {previousLabel}</span>;
   if (value === null) return <span className="text-xs text-muted-foreground">No earlier data to compare</span>;
   if (Math.abs(value) < 0.0005) {
     return (
@@ -54,16 +63,31 @@ function Change({
   );
 }
 
-function Kpi({ title, value, note, delta }: { title: string; value: string; note: string; delta: React.ReactNode }) {
+function Kpi({
+  title,
+  value,
+  note,
+  delta,
+  trend,
+  trendClass = "text-primary",
+}: {
+  title: string;
+  value: string;
+  note: string;
+  delta: React.ReactNode;
+  trend?: number[];
+  trendClass?: string;
+}) {
   return (
     <Card>
       <CardHeader>
         <CardTitle className="text-sm font-medium text-muted-foreground">{title}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-1">
-        <p className="text-2xl font-semibold tabular-nums">{value}</p>
+        <p className="text-3xl font-semibold tracking-tight tabular-nums">{value}</p>
         <p className="text-xs text-muted-foreground">{note}</p>
         {delta}
+        {trend && <Sparkline values={trend} className={cn("mt-3", trendClass)} />}
       </CardContent>
     </Card>
   );
@@ -92,6 +116,14 @@ export default function DashboardPage() {
   const { from, to } = periodRange(days);
   const summary = useOrderSummary(from, to);
   const data = summary.data;
+  const daily = useTimeseries(from, to).data?.days;
+  const trend = {
+    orders: daily?.map((d) => d.orders),
+    revenue: daily?.map((d) => d.revenue),
+    aov: daily?.map((d) => (d.confirmed > 0 ? d.revenue / d.confirmed : 0)),
+    cancellation: daily?.map((d) => (d.confirmed + d.cancelled > 0 ? d.cancelled / (d.confirmed + d.cancelled) : 0)),
+  };
+  const reliable = (data?.previous.orders ?? 0) >= MIN_ORDERS_FOR_PERCENT;
 
   return (
     <div className="space-y-6">
@@ -136,26 +168,34 @@ export default function DashboardPage() {
               title="Orders"
               value={number(data.current.orders)}
               note={`${number(data.current.confirmed)} confirmed · ${number(data.current.cancelled)} cancelled · ${number(data.current.pending)} pending`}
-              delta={<Change value={change(data.current.orders, data.previous.orders)} />}
+              delta={<Change value={change(data.current.orders, data.previous.orders)} previousLabel={reliable ? undefined : number(data.previous.orders)} />}
+              trend={trend.orders}
             />
             <Kpi
               title="Revenue"
               value={money(data.current.revenue)}
               note="Confirmed orders, at the price charged"
-              delta={<Change value={change(data.current.revenue, data.previous.revenue)} />}
+              delta={<Change value={change(data.current.revenue, data.previous.revenue)} previousLabel={reliable ? undefined : money(data.previous.revenue)} />}
+              trend={trend.revenue}
+              trendClass="text-emerald-500"
             />
             <Kpi
               title="Average order value"
               value={money(data.current.averageOrderValue)}
               note="Revenue per confirmed order"
-              delta={<Change value={change(data.current.averageOrderValue, data.previous.averageOrderValue)} />}
+              delta={<Change value={change(data.current.averageOrderValue, data.previous.averageOrderValue)} previousLabel={reliable ? undefined : money(data.previous.averageOrderValue)} />}
+              trend={trend.aov}
+              trendClass="text-sky-500"
             />
             <Kpi
               title="Cancellation rate"
               value={percent(data.current.cancellationRate)}
               note="Of orders that have been decided"
+              trend={trend.cancellation}
+              trendClass="text-amber-500"
               delta={
                 <Change
+                  previousLabel={reliable ? undefined : percent(data.previous.cancellationRate)}
                   higherIsBetter={false}
                   points
                   value={
@@ -176,12 +216,16 @@ export default function DashboardPage() {
 
       <DailyCharts from={from} to={to} />
 
-      <div className="grid gap-4 lg:grid-cols-2">
-        <CancellationReasons from={from} to={to} />
-        <StuckOrders />
+      <div className="grid gap-4 lg:grid-cols-5">
+        <RecentOrders className="lg:col-span-3" />
+        <TopProducts className="lg:col-span-2" />
       </div>
 
-      <LowStock />
+      <div className="grid gap-4 lg:grid-cols-3">
+        <CancellationReasons from={from} to={to} />
+        <StuckOrders />
+        <LowStock />
+      </div>
     </div>
   );
 }

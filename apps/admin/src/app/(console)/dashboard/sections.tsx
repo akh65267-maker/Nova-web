@@ -3,23 +3,36 @@
 import { useMemo } from "react";
 import Link from "next/link";
 import { Ban, CheckCircle2, PackageCheck } from "lucide-react";
+import { Badge } from "@taskmanager/ui/components/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@taskmanager/ui/components/card";
 import { EmptyState } from "@taskmanager/ui/components/empty-state";
 import { ErrorState } from "@taskmanager/ui/components/error-state";
 import { Skeleton } from "@taskmanager/ui/components/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@taskmanager/ui/components/table";
-import { useCancellations, usePendingOrders, useTimeseries } from "@taskmanager/api/use-analytics";
+import { useAdminOrders, useCancellations, usePendingOrders, useTimeseries } from "@taskmanager/api/use-analytics";
 import { useInventoryList } from "@taskmanager/api/use-inventory";
-import { useProducts } from "@taskmanager/api/use-products";
+import { useProducts, useTopSelling } from "@taskmanager/api/use-products";
 import { getApiErrorMessage } from "@taskmanager/api/errors";
 import { BarChart } from "@/components/bar-chart";
 import { formatPrice } from "@taskmanager/ui/lib/utils";
+import { ORDER_STATUS } from "@/lib/order-status";
+import { periodRange } from "@/lib/period";
 
 const LOW_STOCK_AT = 10;
 
-function Panel({ title, description, children }: { title: string; description?: string; children: React.ReactNode }) {
+function Panel({
+  title,
+  description,
+  children,
+  className,
+}: {
+  title: string;
+  description?: string;
+  children: React.ReactNode;
+  className?: string;
+}) {
   return (
-    <Card>
+    <Card className={className}>
       <CardHeader>
         <CardTitle>{title}</CardTitle>
         {description && <p className="text-xs text-muted-foreground">{description}</p>}
@@ -228,6 +241,93 @@ export function LowStock() {
             ))}
           </TableBody>
         </Table>
+      )}
+    </Panel>
+  );
+}
+
+export function RecentOrders({ className }: { className?: string }) {
+  const { from, to } = periodRange(90);
+  const orders = useAdminOrders({ from, to, page: 1, pageSize: 6 });
+
+  return (
+    <Panel title="Recent orders" description="The latest orders, whatever the period above" className={className}>
+      {orders.isPending && <PanelSkeleton height="h-40" />}
+      {orders.isError && (
+        <ErrorState
+          description={getApiErrorMessage(orders.error)}
+          onRetry={() => orders.refetch()}
+          title="We couldn't load the orders"
+        />
+      )}
+      {orders.data && orders.data.items.length === 0 && (
+        <EmptyState icon={PackageCheck} title="No orders yet" className="py-10" />
+      )}
+      {orders.data && orders.data.items.length > 0 && (
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Order</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead className="text-right">Total</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {orders.data.items.map((o) => {
+              const status = ORDER_STATUS[o.status];
+              return (
+                <TableRow key={o.id}>
+                  <TableCell>
+                    <Link href={`/orders/${o.id}`} className="font-mono text-xs underline-offset-4 hover:underline">
+                      {o.id.slice(0, 8)}
+                    </Link>
+                    <p className="text-xs text-muted-foreground">
+                      {new Date(o.createdAtUtc).toISOString().replace("T", " ").slice(0, 16)}
+                    </p>
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant={status.variant}>
+                      <status.icon /> {status.label}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="text-right tabular-nums">{formatPrice(o.total)}</TableCell>
+                </TableRow>
+              );
+            })}
+          </TableBody>
+        </Table>
+      )}
+    </Panel>
+  );
+}
+
+export function TopProducts({ className }: { className?: string }) {
+  const top = useTopSelling(5);
+
+  return (
+    <Panel title="Top products" description="Most bought in the last 30 days" className={className}>
+      {top.isPending && <PanelSkeleton height="h-40" />}
+      {top.isError && (
+        <ErrorState
+          description={getApiErrorMessage(top.error)}
+          onRetry={() => top.refetch()}
+          title="We couldn't load the products"
+        />
+      )}
+      {top.data && top.data.length === 0 && <EmptyState icon={PackageCheck} title="No sales yet" className="py-10" />}
+      {top.data && top.data.length > 0 && (
+        <ol className="space-y-3">
+          {top.data.map((p, i) => (
+            <li key={p.id} className="flex items-center gap-3 text-sm">
+              <span className="w-4 text-xs tabular-nums text-muted-foreground">{i + 1}</span>
+              <span className="min-w-0 flex-1">
+                <span className="block truncate font-medium">{p.name}</span>
+                <span className="block truncate text-xs text-muted-foreground">{p.category}</span>
+              </span>
+              <span className="tabular-nums text-muted-foreground">{formatPrice(p.price)}</span>
+            </li>
+          ))}
+        </ol>
       )}
     </Panel>
   );
