@@ -22,8 +22,8 @@ export function ProductReviews({ productId }: { productId: string }) {
   const moderate = useDeleteReview(productId);
 
   return (
-    <section className="mt-12" aria-labelledby="reviews">
-      <h2 id="reviews" className="mb-4 text-lg font-semibold">
+    <section className="mt-20" aria-labelledby="reviews">
+      <h2 id="reviews" className="mb-6 text-2xl font-semibold tracking-tight">
         Reviews
       </h2>
 

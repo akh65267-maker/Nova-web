@@ -2,7 +2,7 @@
 
 import { use, useEffect, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, Check, Minus, PackageSearch, Plus } from "lucide-react";
+import { ArrowLeft, Check, Minus, PackageSearch, Plus, Truck } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@taskmanager/ui/components/button";
 import { EmptyState } from "@taskmanager/ui/components/empty-state";
@@ -33,8 +33,8 @@ export default function ProductDetailPage(props: PageProps<"/products/[id]">) {
 
   if (isLoading) {
     return (
-      <div className="mx-auto grid w-full max-w-5xl grid-cols-1 gap-8 px-4 py-10 sm:px-6 md:grid-cols-2 lg:px-8">
-        <Skeleton className="aspect-square w-full rounded-xl" />
+      <div className="mx-auto grid w-full max-w-6xl grid-cols-1 gap-10 px-4 py-10 sm:px-6 md:grid-cols-[1.2fr_1fr] md:gap-16 lg:px-8">
+        <Skeleton className="aspect-square w-full rounded-3xl" />
         <div className="flex flex-col gap-4">
           <Skeleton className="h-4 w-24" />
           <Skeleton className="h-9 w-3/4" />
@@ -72,7 +72,7 @@ export default function ProductDetailPage(props: PageProps<"/products/[id]">) {
   const lowStock = inventory?.availability === "LowStock";
 
   return (
-    <div className="mx-auto w-full max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
+    <div className="mx-auto w-full max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
       <Link
         href="/products"
         className="mb-6 inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
@@ -80,32 +80,32 @@ export default function ProductDetailPage(props: PageProps<"/products/[id]">) {
         <ArrowLeft className="size-4" /> All products
       </Link>
 
-      <div className="grid grid-cols-1 gap-8 md:grid-cols-2 md:gap-12">
+      {/* A large gallery beside a buy panel that stays in view while the gallery scrolls past. */}
+      <div className="grid grid-cols-1 gap-10 md:grid-cols-[1.2fr_1fr] md:gap-16">
         <ProductGallery product={product} />
 
-        <div className="flex flex-col gap-4">
-          {product.brand && (
-            <Link
-              href={{ pathname: "/products", query: { brand: product.brand } }}
-              className="w-fit text-sm font-semibold transition-colors hover:text-primary"
-            >
-              {product.brand}
+        <div className="flex flex-col gap-4 md:sticky md:top-24 md:self-start">
+          <p className="flex flex-wrap items-center gap-x-2 text-sm text-muted-foreground">
+            {product.brand && (
+              <>
+                <Link href={{ pathname: "/products", query: { brand: product.brand } }} className="font-medium text-foreground transition-colors hover:text-primary">
+                  {product.brand}
+                </Link>
+                <span aria-hidden>·</span>
+              </>
+            )}
+            <Link href={{ pathname: "/products", query: { category: product.category } }} className="transition-colors hover:text-primary">
+              {product.category}
             </Link>
-          )}
-          <Link
-            href={{ pathname: "/products", query: { category: product.category } }}
-            className="w-fit text-xs font-medium tracking-wide text-muted-foreground uppercase transition-colors hover:text-primary"
-          >
-            {product.category}
-          </Link>
-          <h1 className="text-4xl font-semibold tracking-tight text-balance">{product.name}</h1>
+          </p>
+          <h1 className="text-4xl font-semibold tracking-tight text-balance lg:text-5xl">{product.name}</h1>
           {typeof product.ratingAverage === "number" && (
             <a href="#reviews" className="flex w-fit items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
               <StarRating value={product.ratingAverage} />
               {product.ratingAverage.toFixed(1)} ({product.ratingCount})
             </a>
           )}
-          <ProductPrice product={product} className="text-3xl" />
+          <ProductPrice product={product} className="text-2xl" />
           {product.discountEndsAtUtc && (
             <p className="text-sm text-muted-foreground">Offer ends {new Date(product.discountEndsAtUtc).toLocaleDateString()}</p>
           )}
@@ -135,9 +135,9 @@ export default function ProductDetailPage(props: PageProps<"/products/[id]">) {
             </p>
           )}
 
-          <div className="mt-2 flex flex-wrap items-center gap-3">
+          <div className="mt-2 flex items-center gap-3">
             {canAddToCart && (
-              <div className="flex items-center rounded-lg border" role="group" aria-label="Quantity">
+              <div className="flex shrink-0 items-center rounded-full border" role="group" aria-label="Quantity">
                 <Button
                   variant="ghost"
                   size="icon"
@@ -164,6 +164,7 @@ export default function ProductDetailPage(props: PageProps<"/products/[id]">) {
 
             <Button
               size="lg"
+              className="h-12 flex-1 rounded-full text-base"
               variant={added ? "secondary" : "default"}
               disabled={!canAddToCart}
               onClick={() => {
@@ -193,17 +194,22 @@ export default function ProductDetailPage(props: PageProps<"/products/[id]">) {
               )}
             </Button>
           </div>
+
+          <p className="flex items-center gap-2 border-t pt-4 text-sm text-muted-foreground">
+            <Truck className="size-4 shrink-0" aria-hidden />
+            Free shipping on orders over $50, and free returns.
+          </p>
         </div>
       </div>
 
       {product.attributes.length > 0 && (
-        <section className="mt-12" aria-labelledby="specifications">
-          <h2 id="specifications" className="mb-4 text-lg font-semibold">
+        <section className="mt-20" aria-labelledby="specifications">
+          <h2 id="specifications" className="mb-6 text-2xl font-semibold tracking-tight">
             Specifications
           </h2>
-          <dl className="divide-y rounded-xl ring-1 ring-foreground/10">
+          <dl className="divide-y border-y">
             {product.attributes.map(({ name, value }) => (
-              <div key={name} className="grid grid-cols-3 gap-4 px-4 py-3 text-sm">
+              <div key={name} className="grid grid-cols-3 gap-4 py-4 text-sm">
                 <dt className="text-muted-foreground">{name}</dt>
                 <dd className="col-span-2">{value}</dd>
               </div>

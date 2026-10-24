@@ -10,8 +10,8 @@ export function RelatedProducts({ productId }: { productId: string }) {
   if (related.length === 0) return null;
 
   return (
-    <section className="mt-12" aria-labelledby="you-may-like">
-      <h2 id="you-may-like" className="mb-4 text-lg font-semibold">
+    <section className="mt-20" aria-labelledby="you-may-like">
+      <h2 id="you-may-like" className="mb-6 text-2xl font-semibold tracking-tight">
         You may like
       </h2>
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
