@@ -47,7 +47,7 @@ function ProductStrip({ title, href, products, isLoading }: { title: string; hre
   return (
     <section className="reveal mx-auto w-full max-w-7xl px-4 pt-16 sm:px-6 lg:px-8">
       <div className="mb-6 flex items-end justify-between gap-4">
-        <h2 className="text-2xl font-semibold tracking-tight">{title}</h2>
+        <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">{title}</h2>
         <div className="flex items-center gap-2">
           {href && (
             <Link href={href} className="mr-2 text-sm text-muted-foreground transition-colors hover:text-foreground">
