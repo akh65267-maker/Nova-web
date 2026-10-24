@@ -4,6 +4,7 @@ import { ChevronRight } from "lucide-react";
 import { Button } from "@taskmanager/ui/components/button";
 import type { ProductDto } from "@taskmanager/api/catalog-api";
 import { ProductPicture } from "./product-picture";
+import { formatPrice } from "@taskmanager/ui/lib/utils";
 
 // The first sentence of the description, as the stage's tagline.
 function tagline(description: string) {
@@ -41,10 +42,10 @@ export function FeaturedHero({ product }: { product: ProductDto | null }) {
 
           {product && (
             <p style={{ "--i": 2 } as CSSProperties} className="hero-rise text-base tabular-nums">
-              ${product.price.toFixed(2)}
+              {formatPrice(product.price)}
               {product.discountPercent !== null && (
                 <span className="ml-2 text-muted-foreground line-through">
-                  <span className="sr-only">Was </span>${product.listPrice.toFixed(2)}
+                  <span className="sr-only">Was </span>{formatPrice(product.listPrice)}
                 </span>
               )}
             </p>
