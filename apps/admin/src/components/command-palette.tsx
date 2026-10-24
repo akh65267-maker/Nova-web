@@ -3,6 +3,7 @@
 import { useCallback, useDeferredValue, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Moon, Package, Search, Sun, type LucideIcon } from "lucide-react";
+import { m } from "motion/react";
 import { useTheme } from "next-themes";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@taskmanager/ui/components/dialog";
 import { cn } from "@taskmanager/ui/lib/utils";
@@ -129,8 +130,11 @@ export function CommandPalette({
             </li>
           )}
           {items.map((item, index) => (
-            <li
+            <m.li
               key={item.id}
+              initial={{ opacity: 0, y: 4 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.15, delay: Math.min(index, 6) * 0.02 }}
               id={`palette-${item.id}`}
               role="option"
               aria-selected={index === active}
@@ -144,7 +148,7 @@ export function CommandPalette({
               <item.icon className="size-4 shrink-0 text-muted-foreground" aria-hidden />
               <span className="min-w-0 flex-1 truncate">{item.label}</span>
               <span className="text-xs text-muted-foreground">{item.group}</span>
-            </li>
+            </m.li>
           ))}
         </ul>
       </DialogContent>
