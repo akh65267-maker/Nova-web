@@ -31,13 +31,13 @@ export function ProductCard({ product, priority }: { product: ProductDto; priori
     // can hover, Add to cart appears on hover or focus; on touch it is always there. "group" marks the card
     // (the e2e tests find it by that class).
     <div className="group flex h-full flex-col gap-3">
-      <Link href={`/products/${product.id}`} tabIndex={-1} aria-hidden className="relative block aspect-square overflow-hidden rounded-2xl bg-muted">
+      <Link href={`/products/${product.id}`} tabIndex={-1} aria-hidden className={cn("relative block aspect-square overflow-hidden rounded-2xl bg-muted", product.imageUrl && "dark:bg-white")}>
         <ProductPicture
           product={product}
           alt=""
           priority={priority}
           sizes="(min-width: 1024px) 25vw, (min-width: 640px) 33vw, 50vw"
-          // Shop photos sit on white: multiply melts that into the tile.
+          // Shop photos sit on white: multiply melts that into the tile; in dark mode the tile itself turns white.
           className={product.imageUrl ? "object-contain p-6 mix-blend-multiply transition-transform duration-500 group-hover:scale-105 dark:mix-blend-normal" : undefined}
         />
         {product.discountPercent !== null && (

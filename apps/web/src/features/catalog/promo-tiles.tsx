@@ -54,7 +54,7 @@ export function PromoTiles({ offer }: { offer: ProductDto | null }) {
             <ChevronRight className="size-4" aria-hidden />
           </span>
           {tile.product?.imageUrl && (
-            <div className="relative mt-8 aspect-[4/3] w-full max-w-sm mix-blend-multiply dark:mix-blend-normal">
+            <div className="relative mt-8 aspect-[4/3] w-full max-w-sm overflow-hidden mix-blend-multiply dark:rounded-2xl dark:bg-white dark:mix-blend-normal">
               <ProductPicture
                 product={tile.product}
                 alt=""
