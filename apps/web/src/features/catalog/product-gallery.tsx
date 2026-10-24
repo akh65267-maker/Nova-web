@@ -14,7 +14,7 @@ export function ProductGallery({ product }: { product: ProductDto }) {
 
   return (
     <div className="flex flex-col gap-3">
-      <div className="relative aspect-square overflow-hidden rounded-3xl bg-muted">
+      <div className={cn("relative aspect-square overflow-hidden rounded-3xl bg-muted", current && "dark:bg-white")}>
         {/* Shop photos sit on white: multiply melts that into the soft tile. */}
         <ProductPicture
           product={{ ...product, imageUrl: current }}
@@ -33,7 +33,7 @@ export function ProductGallery({ product }: { product: ProductDto }) {
               aria-pressed={index === selected}
               onClick={() => setSelected(index)}
               className={cn(
-                "relative size-16 shrink-0 overflow-hidden rounded-xl bg-muted ring-1 ring-transparent focus-visible:ring-2 focus-visible:ring-ring",
+                "relative size-16 shrink-0 overflow-hidden rounded-xl bg-muted ring-1 dark:bg-white ring-transparent focus-visible:ring-2 focus-visible:ring-ring",
                 index === selected && "ring-2 ring-primary",
               )}
             >
