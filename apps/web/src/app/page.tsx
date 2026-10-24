@@ -1,129 +1,24 @@
 import type { CSSProperties } from "react";
 import Link from "next/link";
-import { Button } from "@taskmanager/ui/components/button";
 import { Card, CardContent } from "@taskmanager/ui/components/card";
-import { fetchCategories } from "@/lib/catalog-server";
-import { BestOffers, NewArrivals, TopSelling } from "@/features/catalog/product-row";
+import { fetchCategories, fetchProducts } from "@/lib/catalog-server";
+import { FeaturedHero } from "@/features/catalog/featured-hero";
 import { ProductIllustration } from "@/features/catalog/product-illustration";
-import { cn } from "@/lib/utils";
+import { BestOffers, NewArrivals, TopSelling } from "@/features/catalog/product-row";
 
 export default async function Home() {
-  const categories = (await fetchCategories()) ?? [];
-  const tiles = categories.slice(0, 4);
+  const [categoryList, offers, newest] = await Promise.all([
+    fetchCategories(),
+    fetchProducts({ sort: "best-offer", onSale: true, pageSize: 12 }),
+    fetchProducts({ sort: "newest", pageSize: 12 }),
+  ]);
+  const categories = categoryList ?? [];
+  // The stage needs a picture: the deepest offer that has one, else the newest that has one.
+  const featured = [...(offers?.items ?? []), ...(newest?.items ?? [])].find((product) => product.imageUrl) ?? null;
 
   return (
     <div className="flex flex-1 flex-col">
-      {/* ── Hero ─────────────────────────────────────── */}
-      <section className="relative overflow-hidden border-b">
-        {/* Subtle background gradient */}
-        <div
-          className="pointer-events-none absolute inset-0 bg-gradient-to-br from-background via-background to-muted/50"
-          aria-hidden
-        />
-
-        {/* Slow brand-colour aurora, CSS only (see .hero-aurora in globals.css) */}
-        <div className="hero-aurora pointer-events-none absolute inset-0" aria-hidden>
-          <span />
-          <span />
-          <span />
-        </div>
-
-        <div className="relative mx-auto flex max-w-7xl items-center gap-12 px-4 py-20 sm:px-6 sm:py-28 lg:px-8">
-          {/* ── Left: text content ──────────────────── */}
-          <div className="hero-scroll-text flex flex-1 flex-col items-start gap-6">
-            <span
-              style={{ "--i": 0 } as CSSProperties}
-              className="hero-rise inline-flex items-center rounded-full border bg-background px-3 py-1 text-xs font-medium text-muted-foreground"
-            >
-              Free shipping on orders over $50
-            </span>
-
-            <h1
-              style={{ "--i": 1 } as CSSProperties}
-              className="hero-rise max-w-2xl text-5xl font-semibold tracking-tighter text-balance sm:text-6xl lg:text-7xl"
-            >
-              Everything you need,{" "}
-              <span className="text-foreground/50">delivered fast.</span>
-            </h1>
-
-            <p
-              style={{ "--i": 2 } as CSSProperties}
-              className="hero-rise max-w-md text-lg text-muted-foreground"
-            >
-              Browse across every category with fast checkout and real-time
-              order tracking.
-            </p>
-
-            <div
-              style={{ "--i": 3 } as CSSProperties}
-              className="hero-rise flex flex-wrap gap-3"
-            >
-              <Button
-                size="lg"
-                nativeButton={false}
-                render={<Link href="/products">Shop now</Link>}
-              />
-              <Button
-                size="lg"
-                variant="outline"
-                nativeButton={false}
-                render={<Link href="/products?sort=newest">New arrivals</Link>}
-              />
-            </div>
-
-            {/* Stats strip */}
-            <div
-              style={{ "--i": 4 } as CSSProperties}
-              className="hero-rise flex items-center gap-6 pt-2"
-            >
-              <div>
-                <p className="text-xl font-bold tabular-nums">4</p>
-                <p className="text-xs text-muted-foreground">Categories</p>
-              </div>
-              <div className="h-8 w-px bg-border" />
-              <div>
-                <p className="text-xl font-bold">Free</p>
-                <p className="text-xs text-muted-foreground">Returns</p>
-              </div>
-              <div className="h-8 w-px bg-border" />
-              <div>
-                <p className="text-xl font-bold">24/7</p>
-                <p className="text-xs text-muted-foreground">Support</p>
-              </div>
-            </div>
-          </div>
-
-          {/* ── Right: decorative category grid ─────── */}
-          <div
-            className="hero-scroll-tiles relative hidden shrink-0 lg:block"
-            aria-hidden
-          >
-            <div className="grid grid-cols-2 gap-3">
-              {tiles.map(({ id, name: category }, i) => (
-                <div
-                  key={id}
-                  style={{ "--i": i + 2 } as CSSProperties}
-                  className={cn(
-                    "hero-rise",
-                    i === 1 && "mt-5",
-                    i === 3 && "-mt-5",
-                  )}
-                >
-                  <div
-                    style={{ "--i": i } as CSSProperties}
-                    className="hero-float h-32 w-32 overflow-hidden rounded-2xl border border-border/50 shadow-sm"
-                  >
-                    <ProductIllustration
-                      category={category}
-                      className="h-full w-full"
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
+      <FeaturedHero product={featured} />
 
       <NewArrivals />
       <TopSelling />
