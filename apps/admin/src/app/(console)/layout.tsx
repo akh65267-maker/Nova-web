@@ -16,6 +16,7 @@ import {
   Tags,
   type LucideIcon,
 } from "lucide-react";
+import { m } from "motion/react";
 import { Button } from "@taskmanager/ui/components/button";
 import { Skeleton } from "@taskmanager/ui/components/skeleton";
 import { cn } from "@taskmanager/ui/lib/utils";
@@ -48,6 +49,9 @@ function readCollapsed() {
     return false;
   }
 }
+
+// Labels fade while the sidebar's width animates; the icons stay put at the left edge.
+const labelClass = "whitespace-nowrap transition-opacity duration-200";
 
 const footerLink =
   "flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground";
@@ -94,18 +98,18 @@ export default function ConsoleLayout({ children }: { children: React.ReactNode 
 
   return (
     <div className="flex min-h-screen flex-col md:flex-row">
-      <aside
-        className={cn(
-          "min-w-0 border-b bg-sidebar text-sidebar-foreground md:sticky md:top-0 md:h-screen md:shrink-0 md:border-r md:border-b-0",
-          collapsed ? "md:w-[4.5rem]" : "md:w-60",
-        )}
+      {/* The width is a CSS variable so only md+ uses it; on a phone the sidebar is a row on top. */}
+      <m.aside
+        initial={false}
+        animate={{ "--sidebar-w": collapsed ? "4rem" : "15rem" }}
+        className="min-w-0 border-b bg-sidebar text-sidebar-foreground md:sticky md:top-0 md:h-screen md:w-(--sidebar-w) md:shrink-0 md:overflow-hidden md:border-r md:border-b-0"
       >
         <div className="flex h-14 items-center justify-between gap-2 px-4 md:h-16">
           <p className="flex shrink-0 items-center gap-2.5 whitespace-nowrap text-sm font-semibold">
             <span className="flex size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
               <ShieldCheck className="size-4" />
             </span>
-            <span className={cn(collapsed && "md:hidden")}>Nova Admin</span>
+            <span className={cn(labelClass, collapsed && "md:opacity-0")}>Nova Admin</span>
           </p>
           <div className="flex items-center gap-1 md:hidden">
             <ThemeToggle />
@@ -121,11 +125,11 @@ export default function ConsoleLayout({ children }: { children: React.ReactNode 
             type="button"
             onClick={() => setPaletteOpen(true)}
             title={collapsed ? "Search (Ctrl+K)" : undefined}
-            className={cn(footerLink, "mb-2 hidden border md:flex", collapsed && "justify-center px-0")}
+            className={cn(footerLink, "mb-2 hidden border md:flex")}
           >
             <Search className="size-4 shrink-0" />
-            <span className={cn("flex-1 text-left", collapsed && "sr-only")}>Search</span>
-            <kbd className={cn("rounded border px-1.5 text-[10px] font-normal", collapsed && "hidden")}>Ctrl K</kbd>
+            <span className={cn(labelClass, "flex-1 text-left", collapsed && "md:opacity-0")}>Search</span>
+            <kbd className={cn(labelClass, "rounded border px-1.5 text-[10px] font-normal", collapsed && "md:opacity-0")}>Ctrl K</kbd>
           </button>
           <nav
             aria-label="Admin"
@@ -141,14 +145,13 @@ export default function ConsoleLayout({ children }: { children: React.ReactNode 
                   aria-current={active ? "page" : undefined}
                   className={cn(
                     "flex shrink-0 items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
-                    collapsed && "md:justify-center md:px-0",
                     active
                       ? "bg-accent text-accent-foreground"
                       : "text-muted-foreground hover:bg-muted hover:text-foreground",
                   )}
                 >
                   <Icon className="size-4 shrink-0" />
-                  <span className={cn(collapsed && "md:sr-only")}>{label}</span>
+                  <span className={cn(labelClass, collapsed && "md:opacity-0")}>{label}</span>
                 </Link>
               );
             })}
@@ -158,19 +161,19 @@ export default function ConsoleLayout({ children }: { children: React.ReactNode 
             <a
               href={SHOP_URL}
               title={collapsed ? "Back to shop" : undefined}
-              className={cn(footerLink, collapsed && "justify-center px-0")}
+              className={footerLink}
             >
               <ArrowLeft className="size-4 shrink-0" />
-              <span className={cn(collapsed && "sr-only")}>Back to shop</span>
+              <span className={cn(labelClass, collapsed && "opacity-0")}>Back to shop</span>
             </a>
             <button
               type="button"
               onClick={() => logout()}
               title={collapsed ? "Sign out" : undefined}
-              className={cn(footerLink, collapsed && "justify-center px-0")}
+              className={footerLink}
             >
               <LogOut className="size-4 shrink-0" />
-              <span className={cn(collapsed && "sr-only")}>Sign out</span>
+              <span className={cn(labelClass, collapsed && "opacity-0")}>Sign out</span>
             </button>
             <div className={cn("mt-1 flex items-center gap-1", collapsed ? "flex-col" : "justify-between")}>
               <ThemeToggle />
@@ -186,7 +189,7 @@ export default function ConsoleLayout({ children }: { children: React.ReactNode 
             </div>
           </div>
         </div>
-      </aside>
+      </m.aside>
 
       <CommandPalette open={paletteOpen} onOpenChange={setPaletteOpen} commands={commands} />
 
