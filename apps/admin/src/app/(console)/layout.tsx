@@ -1,8 +1,8 @@
 "use client";
 
-import { useSyncExternalStore } from "react";
+import { useState, useSyncExternalStore } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   ArrowLeft,
   LayoutDashboard,
@@ -10,6 +10,7 @@ import {
   Package,
   PanelLeftClose,
   PanelLeftOpen,
+  Search,
   ReceiptText,
   ShieldCheck,
   Tags,
@@ -20,6 +21,7 @@ import { Skeleton } from "@taskmanager/ui/components/skeleton";
 import { cn } from "@taskmanager/ui/lib/utils";
 import { useSessionLogout } from "@taskmanager/auth/use-session";
 import { useRequireSession } from "@taskmanager/auth/use-require-session";
+import { CommandPalette, type PaletteCommand } from "@/components/command-palette";
 import { ThemeToggle } from "@/components/theme-toggle";
 
 const SHOP_URL = process.env.NEXT_PUBLIC_SHOP_URL ?? "http://localhost:3100";
@@ -54,6 +56,8 @@ const footerLink =
 // sign-in page with a notice (sending them to "/" would only bounce them back here).
 export default function ConsoleLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const router = useRouter();
+  const [paletteOpen, setPaletteOpen] = useState(false);
   const logout = useSessionLogout();
   const { isReady } = useRequireSession(`/login?redirect=${encodeURIComponent(pathname)}`, {
     requireAdmin: true,
@@ -67,6 +71,18 @@ export default function ConsoleLayout({ children }: { children: React.ReactNode 
     } catch {}
     collapsedListeners.forEach((listener) => listener());
   }
+
+  const commands: PaletteCommand[] = [
+    ...NAV.map(({ href, label, icon }) => ({
+      id: href,
+      label: `Go to ${label}`,
+      group: "Pages",
+      icon,
+      run: () => router.push(href),
+    })),
+    { id: "shop", label: "Back to shop", group: "Actions", icon: ArrowLeft, run: () => window.location.assign(SHOP_URL) },
+    { id: "logout", label: "Sign out", group: "Actions", icon: LogOut, run: () => logout() },
+  ];
 
   if (!isReady) {
     return (
@@ -101,6 +117,16 @@ export default function ConsoleLayout({ children }: { children: React.ReactNode 
         </div>
 
         <div className="flex flex-col px-4 pb-3 md:h-[calc(100%-4rem)] md:px-3 md:pb-16">
+          <button
+            type="button"
+            onClick={() => setPaletteOpen(true)}
+            title={collapsed ? "Search (Ctrl+K)" : undefined}
+            className={cn(footerLink, "mb-2 hidden border md:flex", collapsed && "justify-center px-0")}
+          >
+            <Search className="size-4 shrink-0" />
+            <span className={cn("flex-1 text-left", collapsed && "sr-only")}>Search</span>
+            <kbd className={cn("rounded border px-1.5 text-[10px] font-normal", collapsed && "hidden")}>Ctrl K</kbd>
+          </button>
           <nav
             aria-label="Admin"
             className="flex gap-1 overflow-x-auto [scrollbar-width:none] md:flex-col md:overflow-visible [&::-webkit-scrollbar]:hidden"
@@ -161,6 +187,8 @@ export default function ConsoleLayout({ children }: { children: React.ReactNode 
           </div>
         </div>
       </aside>
+
+      <CommandPalette open={paletteOpen} onOpenChange={setPaletteOpen} commands={commands} />
 
       <main className="min-w-0 flex-1 px-4 py-6 sm:px-6 md:px-8 md:py-8">
         <div className="mx-auto w-full max-w-6xl">{children}</div>

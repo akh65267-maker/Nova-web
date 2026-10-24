@@ -19,11 +19,12 @@ import {
   type ProductListParams,
 } from "./catalog-api";
 
-export function useProducts(params: ProductListParams) {
+export function useProducts(params: ProductListParams, options?: { enabled?: boolean }) {
   return useQuery({
     queryKey: ["products", params],
     queryFn: () => listProducts(params),
     placeholderData: (previousData) => previousData,
+    enabled: options?.enabled,
   });
 }
 
