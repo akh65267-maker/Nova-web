@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Image from "next/image";
+import { AnimatePresence, m } from "motion/react";
 import { cn } from "@/lib/utils";
 import type { ProductDto } from "@taskmanager/api/catalog-api";
 import { ProductPicture } from "./product-picture";
@@ -16,12 +17,24 @@ export function ProductGallery({ product }: { product: ProductDto }) {
     <div className="flex flex-col gap-3">
       <div className={cn("relative aspect-square overflow-hidden rounded-3xl bg-muted", current && "dark:bg-zinc-300")}>
         {/* Shop photos sit on white: multiply melts that into the soft tile. */}
-        <ProductPicture
-          product={{ ...product, imageUrl: current }}
-          sizes="(min-width: 768px) 55vw, 100vw"
-          priority
-          className={current ? "object-contain p-10 mix-blend-multiply" : undefined}
-        />
+        {/* A new picture fades in over the old one. The first render is not animated, so the page is never blank. */}
+        <AnimatePresence initial={false}>
+          <m.div
+            key={current ?? "none"}
+            className="absolute inset-0"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+          >
+            <ProductPicture
+              product={{ ...product, imageUrl: current }}
+              sizes="(min-width: 768px) 55vw, 100vw"
+              priority
+              className={current ? "object-contain p-10 mix-blend-multiply" : undefined}
+            />
+          </m.div>
+        </AnimatePresence>
       </div>
       {pictures.length > 1 && (
         <div className="flex flex-wrap gap-2" role="group" aria-label="Pictures of this product">

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { AnimatePresence, m } from "motion/react";
 import { Minus, Plus, ShoppingCart, Trash2 } from "lucide-react";
 import {
   Sheet,
@@ -58,8 +59,17 @@ export function CartDrawer() {
             />
           ) : (
             <ul className="divide-y">
+              <AnimatePresence initial={false}>
               {items.map((item) => (
-                <li key={item.productId} className="flex flex-col gap-3 py-4 text-sm">
+                <m.li
+                  key={item.productId}
+                  layout="position"
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="flex flex-col gap-3 overflow-hidden text-sm"
+                >
+                  <div className="flex flex-col gap-3 py-4">
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
                       <p className="font-medium">{item.name}</p>
@@ -103,8 +113,10 @@ export function CartDrawer() {
                       <Trash2 className="size-4" />
                     </Button>
                   </div>
-                </li>
+                  </div>
+                </m.li>
               ))}
+              </AnimatePresence>
             </ul>
           )}
         </div>
