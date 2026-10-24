@@ -1,6 +1,7 @@
 "use client";
 
-import { useDeferredValue, useRef, useState } from "react";
+import { Suspense, useDeferredValue, useRef, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import Image from "next/image";
 import { toast } from "sonner";
 import { AxiosError } from "axios";
@@ -643,8 +644,17 @@ function StockBadge({ quantity }: { quantity: number }) {
   return null;
 }
 
+// The command palette links here with ?q=, so the search box can start filled in.
 export default function AdminProductsPage() {
-  const [search, setSearch] = useState("");
+  return (
+    <Suspense>
+      <ProductsPage />
+    </Suspense>
+  );
+}
+
+function ProductsPage() {
+  const [search, setSearch] = useState(useSearchParams().get("q") ?? "");
   const [showArchived, setShowArchived] = useState(true);
   const [page, setPage] = useState(1);
   const term = useDeferredValue(search.trim());
