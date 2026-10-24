@@ -31,14 +31,14 @@ export function ProductCard({ product, priority }: { product: ProductDto; priori
     // can hover, Add to cart appears on hover or focus; on touch it is always there. "group" marks the card
     // (the e2e tests find it by that class).
     <div className="group flex h-full flex-col gap-3">
-      <Link href={`/products/${product.id}`} tabIndex={-1} aria-hidden className={cn("relative block aspect-square overflow-hidden rounded-2xl bg-muted", product.imageUrl && "dark:bg-white")}>
+      <Link href={`/products/${product.id}`} tabIndex={-1} aria-hidden className={cn("relative block aspect-square overflow-hidden rounded-2xl bg-muted", product.imageUrl && "dark:bg-zinc-300")}>
         <ProductPicture
           product={product}
           alt=""
           priority={priority}
           sizes="(min-width: 1024px) 25vw, (min-width: 640px) 33vw, 50vw"
-          // Shop photos sit on white: multiply melts that into the tile; in dark mode the tile itself turns white.
-          className={product.imageUrl ? "object-contain p-6 mix-blend-multiply transition-transform duration-500 group-hover:scale-105 dark:mix-blend-normal" : undefined}
+          // Shop photos sit on white: multiply melts that into the tile, which dark mode turns light grey rather than glaring white.
+          className={product.imageUrl ? "object-contain p-6 mix-blend-multiply transition-transform duration-500 group-hover:scale-105" : undefined}
         />
         {product.discountPercent !== null && (
           <span className="absolute top-3 left-3 rounded-full bg-background/80 px-2 py-0.5 text-xs font-medium text-destructive backdrop-blur">Sale</span>

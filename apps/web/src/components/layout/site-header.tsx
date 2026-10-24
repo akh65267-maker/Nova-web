@@ -138,6 +138,11 @@ export function SiteHeader() {
           </Button>
         </div>
       </div>
+
+      {/* Phones have no room for search beside the icons: it gets a row of its own. */}
+      <div className="px-4 pb-3 sm:hidden">
+        <SearchBox className="block max-w-none" />
+      </div>
     </header>
   );
 }

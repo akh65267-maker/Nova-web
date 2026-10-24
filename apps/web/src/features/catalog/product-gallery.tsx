@@ -14,13 +14,13 @@ export function ProductGallery({ product }: { product: ProductDto }) {
 
   return (
     <div className="flex flex-col gap-3">
-      <div className={cn("relative aspect-square overflow-hidden rounded-3xl bg-muted", current && "dark:bg-white")}>
+      <div className={cn("relative aspect-square overflow-hidden rounded-3xl bg-muted", current && "dark:bg-zinc-300")}>
         {/* Shop photos sit on white: multiply melts that into the soft tile. */}
         <ProductPicture
           product={{ ...product, imageUrl: current }}
           sizes="(min-width: 768px) 55vw, 100vw"
           priority
-          className={current ? "object-contain p-10 mix-blend-multiply dark:mix-blend-normal" : undefined}
+          className={current ? "object-contain p-10 mix-blend-multiply" : undefined}
         />
       </div>
       {pictures.length > 1 && (
@@ -33,11 +33,11 @@ export function ProductGallery({ product }: { product: ProductDto }) {
               aria-pressed={index === selected}
               onClick={() => setSelected(index)}
               className={cn(
-                "relative size-16 shrink-0 overflow-hidden rounded-xl bg-muted ring-1 dark:bg-white ring-transparent focus-visible:ring-2 focus-visible:ring-ring",
+                "relative size-16 shrink-0 overflow-hidden rounded-xl bg-muted ring-1 dark:bg-zinc-300 ring-transparent focus-visible:ring-2 focus-visible:ring-ring",
                 index === selected && "ring-2 ring-primary",
               )}
             >
-              <Image src={url} alt="" fill sizes="64px" unoptimized className="object-contain p-1.5 mix-blend-multiply dark:mix-blend-normal" />
+              <Image src={url} alt="" fill sizes="64px" unoptimized className="object-contain p-1.5 mix-blend-multiply" />
             </button>
           ))}
         </div>
