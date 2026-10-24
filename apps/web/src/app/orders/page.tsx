@@ -23,7 +23,7 @@ export default function OrdersPage() {
 
   return (
     <div className="mx-auto w-full max-w-2xl px-4 py-16">
-      <h1 className="mb-6 text-2xl font-bold tracking-tight">Your orders</h1>
+      <h1 className="mb-8 text-3xl font-semibold tracking-tight">Your orders</h1>
 
       {isLoading ? (
         <div className="flex flex-col gap-3">

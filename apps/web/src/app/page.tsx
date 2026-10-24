@@ -40,7 +40,7 @@ export default async function Home() {
 
             <h1
               style={{ "--i": 1 } as CSSProperties}
-              className="hero-rise max-w-xl text-4xl font-bold tracking-tight text-balance sm:text-5xl lg:text-6xl"
+              className="hero-rise max-w-2xl text-5xl font-semibold tracking-tighter text-balance sm:text-6xl lg:text-7xl"
             >
               Everything you need,{" "}
               <span className="text-foreground/50">delivered fast.</span>
@@ -132,7 +132,7 @@ export default async function Home() {
       {/* ── Category grid ────────────────────────────── */}
       {categories.length > 0 && (
         <section className="reveal mx-auto w-full max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
-          <h2 className="mb-6 text-2xl font-semibold tracking-tight">
+          <h2 className="mb-8 text-3xl font-semibold tracking-tight sm:text-4xl">
             Shop by category
           </h2>
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">

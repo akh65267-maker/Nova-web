@@ -98,7 +98,7 @@ export default function ProductDetailPage(props: PageProps<"/products/[id]">) {
           >
             {product.category}
           </Link>
-          <h1 className="text-3xl font-bold tracking-tight text-balance">{product.name}</h1>
+          <h1 className="text-4xl font-semibold tracking-tight text-balance">{product.name}</h1>
           {typeof product.ratingAverage === "number" && (
             <a href="#reviews" className="flex w-fit items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
               <StarRating value={product.ratingAverage} />
