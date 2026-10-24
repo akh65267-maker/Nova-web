@@ -35,8 +35,8 @@ test("an administrator edits a product, takes it off sale, and brings it back", 
   // Edit: the new name and price show in the list, and the shop serves them.
   const renamed = `${name} renamed`;
   await row.getByRole("button", { name: `Edit ${name}` }).click();
-  await page.getByLabel("Name").fill(renamed);
-  await page.getByLabel("Price").fill("12.5");
+  await page.getByLabel("Name", { exact: true }).fill(renamed);
+  await page.getByLabel("Price", { exact: true }).fill("12.5");
   await page.getByRole("button", { name: "Save changes" }).click();
   await expect(page.getByText(`${renamed} updated`)).toBeVisible();
   const renamedRow = page.getByRole("row").filter({ hasText: renamed });

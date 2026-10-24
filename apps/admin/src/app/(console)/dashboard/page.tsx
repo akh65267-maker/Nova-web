@@ -8,6 +8,7 @@ import { Skeleton } from "@taskmanager/ui/components/skeleton";
 import { ErrorState } from "@taskmanager/ui/components/error-state";
 import { cn } from "@taskmanager/ui/lib/utils";
 import { useOrderSummary, useTimeseries } from "@taskmanager/api/use-analytics";
+import { Reveal } from "@/components/reveal";
 import { Sparkline } from "@/components/sparkline";
 import { getApiErrorMessage } from "@taskmanager/api/errors";
 import { change, firstDay, lastDay, PERIODS, periodRange } from "@/lib/period";
@@ -21,6 +22,9 @@ const percent = (n: number | null) => (n === null ? "None yet" : `${(n * 100).to
 // A percentage on a handful of orders swings wildly (1 order to 5 is "+400%"), so below this many
 // orders in the earlier period the change is shown as the earlier figure instead.
 const MIN_ORDERS_FOR_PERCENT = 5;
+
+// The four cards arrive one after another, in this order.
+const KPI_ORDER = ["Orders", "Revenue", "Average order value", "Cancellation rate"];
 
 // "Good" depends on the figure: more orders is good, more cancellations is not.
 function Change({
@@ -79,7 +83,8 @@ function Kpi({
   trendClass?: string;
 }) {
   return (
-    <Card>
+    <Reveal delay={Math.max(0, KPI_ORDER.indexOf(title)) * 0.05} className="h-full">
+    <Card className="h-full">
       <CardHeader>
         <CardTitle className="text-sm font-medium text-muted-foreground">{title}</CardTitle>
       </CardHeader>
@@ -90,6 +95,7 @@ function Kpi({
         {trend && <Sparkline values={trend} className={cn("mt-3", trendClass)} />}
       </CardContent>
     </Card>
+    </Reveal>
   );
 }
 
@@ -214,18 +220,20 @@ export default function DashboardPage() {
         </>
       )}
 
-      <DailyCharts from={from} to={to} />
+      <Reveal delay={0.12}>
+        <DailyCharts from={from} to={to} />
+      </Reveal>
 
-      <div className="grid gap-4 lg:grid-cols-5">
+      <Reveal delay={0.18} className="grid gap-4 lg:grid-cols-5">
         <RecentOrders className="lg:col-span-3" />
         <TopProducts className="lg:col-span-2" />
-      </div>
+      </Reveal>
 
-      <div className="grid gap-4 lg:grid-cols-3">
+      <Reveal delay={0.24} className="grid gap-4 lg:grid-cols-3">
         <CancellationReasons from={from} to={to} />
         <StuckOrders />
         <LowStock />
-      </div>
+      </Reveal>
     </div>
   );
 }
