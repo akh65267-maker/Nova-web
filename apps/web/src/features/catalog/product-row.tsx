@@ -70,8 +70,8 @@ function ProductStrip({ title, href, products, isLoading }: { title: string; hre
         {isLoading
           ? Array.from({ length: 5 }).map((_, i) => (
               <div key={i} className={`${ITEM} flex flex-col`}>
-                <Skeleton className="aspect-square w-full" />
-                <Skeleton className="h-[14.3rem] w-full" />
+                <Skeleton className="aspect-square w-full rounded-2xl" />
+                <Skeleton className="h-20 w-full" />
               </div>
             ))
           : products?.map((product, index) => (
