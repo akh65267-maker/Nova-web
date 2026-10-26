@@ -1,7 +1,7 @@
 import type { BrandDto, CategoryDto, ProductDto, ProductListParams, ProductListResult } from "@taskmanager/api/catalog-api";
 
-// The demo build has no backend: these products stand in for the catalogue. Pictures are left null,
-// so every product shows its category illustration.
+// The demo build has no backend: these products stand in for the catalogue. Pictures are SVGs,
+// so every product shows its picture from public/demo (drawn by scripts/make-demo-images.mjs).
 
 type Seed = [name: string, category: string, brand: string, price: number, discountPercent: number | null, stock: number, rating: number, ratings: number, description: string, colour: string];
 
@@ -49,7 +49,7 @@ export const DEMO_PRODUCTS: ProductDto[] = SEEDS.map(([name, category, brand, li
     gallery: [],
     ratingAverage: rating,
     ratingCount: ratings,
-    imageUrl: null,
+    imageUrl: `/demo/${name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/-$/, "")}.svg`,
     isArchived: false,
   };
 });
