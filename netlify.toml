@@ -1,0 +1,8 @@
+# Netlify build for the demo branch: the shop with built-in data, no backend.
+[build]
+  command = "npm run build -w apps/web"
+  publish = "apps/web/.next"
+
+[build.environment]
+  NEXT_PUBLIC_DEMO = "1"
+  NODE_VERSION = "22"
